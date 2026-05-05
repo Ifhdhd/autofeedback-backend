@@ -1,3 +1,5 @@
+<!-- public/schedule.html -->
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -9,440 +11,238 @@
   content="width=device-width, initial-scale=1.0"
 />
 
-<title>Schedule Feedback</title>
+<title>Schedule</title>
+
+<link
+  rel="stylesheet"
+  href="/style.css"
+/>
 
 <script src="/recorder.js"></script>
-
-<style>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
-body{
-  font-family:Arial,sans-serif;
-  background:#eef2f7;
-  color:#1e293b;
-  padding:20px;
-}
-
-.container{
-  max-width:1000px;
-  margin:auto;
-}
-
-.card{
-  background:white;
-  border-radius:18px;
-  padding:20px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.08);
-  margin-bottom:20px;
-}
-
-h1{
-  margin-bottom:20px;
-}
-
-h2{
-  margin-bottom:15px;
-}
-
-.info{
-  margin-top:10px;
-  font-size:15px;
-  line-height:1.6;
-}
-
-.label{
-  font-weight:bold;
-  color:#111827;
-}
-
-input,
-select,
-textarea,
-button{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #d1d5db;
-  margin-top:12px;
-  font-size:14px;
-}
-
-textarea{
-  min-height:100px;
-  resize:vertical;
-}
-
-button{
-  border:none;
-  background:#2563eb;
-  color:white;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#1d4ed8;
-}
-
-.success{
-  color:green;
-  margin-top:15px;
-}
-
-.error{
-  color:red;
-  margin-top:15px;
-}
-
-.audio-box{
-  margin-top:15px;
-}
-
-.photo-preview{
-  width:100%;
-  max-height:300px;
-  object-fit:cover;
-  border-radius:12px;
-  margin-top:15px;
-}
-
-.badge{
-  display:inline-block;
-  background:#dbeafe;
-  color:#1d4ed8;
-  padding:8px 14px;
-  border-radius:999px;
-  margin-top:10px;
-  font-size:13px;
-  font-weight:bold;
-}
-
-</style>
 
 </head>
 <body>
 
 <div class="container">
 
-<h1>Schedule Feedback</h1>
+  <div class="navbar">
 
-<!-- INFO TASK -->
-
-<div class="card">
-
-  <h2>Informasi Checkin</h2>
-
-  <div class="badge">
-    Auto Coordinate Enabled
-  </div>
-
-  <div class="info">
-    <span class="label">
-      Task ID:
-    </span>
-
-    <span id="taskIdText">
-      -
-    </span>
-  </div>
-
-  <div class="info">
-    <span class="label">
-      Address ID:
-    </span>
-
-    <span id="addressIdText">
-      -
-    </span>
-  </div>
-
-  <div class="info">
-    <span class="label">
-      Latitude Checkin:
-    </span>
-
-    <span id="latitudeText">
-      -
-    </span>
-  </div>
-
-  <div class="info">
-    <span class="label">
-      Longitude Checkin:
-    </span>
-
-    <span id="longitudeText">
-      -
-    </span>
-  </div>
-
-  <div class="info">
-    <span class="label">
-      Distance:
-    </span>
-
-    <span>
-      0 Meter
-    </span>
-  </div>
-
-  <div class="info">
-    <span class="label">
-      Address:
-    </span>
-
-    <div id="addressText">
-      -
+    <div class="logo">
+      Schedule Feedback
     </div>
+
+    <button
+      class="btn-primary"
+      onclick="history.back()"
+    >
+      Back
+    </button>
+
   </div>
 
-</div>
+  <div class="card">
 
-<!-- FORM -->
+    <div class="section-title">
+      Informasi Checkin
+    </div>
 
-<div class="card">
+    <div class="info-box">
 
-  <h2>Buat Schedule</h2>
+      <div class="info-item">
+        <b>Task ID:</b>
+        <span id="showTaskId"></span>
+      </div>
 
-  <input
-    type="datetime-local"
-    id="scheduleTime"
-  >
+      <div class="info-item">
+        <b>Address ID:</b>
+        <span id="showAddressId"></span>
+      </div>
 
-  <select id="feedbackId">
+      <div class="info-item">
+        <b>Latitude Checkin:</b>
+        <span id="showLat"></span>
+      </div>
 
-    <option value="149">
-      PTP dari user
-    </option>
+      <div class="info-item">
+        <b>Longitude Checkin:</b>
+        <span id="showLng"></span>
+      </div>
 
-    <option value="150">
-      PTP dari keluarga / teman
-    </option>
+      <div class="info-item">
+        <b>Status:</b>
+        GPS sesuai rumah nasabah
+      </div>
 
-    <option value="151">
-      Titip pesan ke keluarga / teman
-    </option>
+    </div>
 
-    <option value="154">
-      Tidak ada di rumah
-    </option>
+    <iframe id="maps"></iframe>
 
-    <option value="157">
-      Tidak ketemu user
-    </option>
+    <input
+      type="datetime-local"
+      id="scheduleTime"
+    >
 
-    <option value="158">
-      User tolak bayar
-    </option>
+    <select id="feedbackId">
 
-    <option value="166">
-      Sementara tidak ada uang
-    </option>
+      <option value="149">
+        PTP dari user
+      </option>
 
-    <option value="171">
-      Pengaruh pandemi
-    </option>
+      <option value="150">
+        PTP keluarga
+      </option>
 
-    <option value="172">
-      Mengajukan restrukturisasi hutang
-    </option>
+      <option value="151">
+        Titip pesan
+      </option>
 
-    <option value="206">
-      Nasabah tidak mengizinkan recording
-    </option>
+      <option value="154">
+        Tidak di rumah
+      </option>
 
-  </select>
+      <option value="157">
+        Tidak ketemu user
+      </option>
 
-  <textarea
-    id="remark"
-    placeholder="Remark"
-  ></textarea>
+      <option value="158">
+        User menolak bayar
+      </option>
 
-</div>
+      <option value="166">
+        Tidak ada uang
+      </option>
 
-<!-- FOTO -->
+      <option value="171">
+        Pengaruh pandemi
+      </option>
 
-<div class="card">
+      <option value="172">
+        Restrukturisasi hutang
+      </option>
 
-  <h2>Upload Foto</h2>
+      <option value="206">
+        Menolak recording
+      </option>
 
-  <input
-    type="file"
-    id="photoFile"
-    accept="image/*"
-  >
+    </select>
 
-  <img
-    id="photoPreview"
-    class="photo-preview"
-    style="display:none;"
-  >
+    <textarea
+      id="remark"
+      placeholder="Remark"
+    ></textarea>
 
-</div>
+    <input
+      type="file"
+      id="photoFile"
+      accept="image/*"
+    >
 
-<!-- RECORDING -->
+    <img
+      id="preview"
+      class="preview-image"
+      style="display:none;"
+    >
 
-<div class="card">
+    <button
+      class="btn-danger"
+      onclick="startRecording()"
+    >
+      Start Recording
+    </button>
 
-  <h2>Recording</h2>
+    <button
+      class="btn-primary"
+      onclick="stopRecordingCustom()"
+    >
+      Stop Recording
+    </button>
 
-  <button onclick="startRecording()">
-    Start Recording
-  </button>
-
-  <button onclick="stopRecording()">
-    Stop Recording
-  </button>
-
-  <div id="recordStatus"></div>
-
-  <div class="audio-box">
+    <div id="recordStatus"></div>
 
     <audio
       id="previewAudio"
       controls
-      style="display:none;width:100%;"
+      style="display:none;"
     ></audio>
 
+    <button
+      class="btn-success"
+      onclick="saveSchedule()"
+    >
+      Save Schedule
+    </button>
+
+    <div id="result"></div>
+
   </div>
-
-</div>
-
-<!-- SUBMIT -->
-
-<div class="card">
-
-  <button onclick="addSchedule()">
-    Tambah Schedule
-  </button>
-
-  <div id="result"></div>
-
-</div>
 
 </div>
 
 <script>
 
-/*
-|--------------------------------------------------------------------------
-| TASK DATA
-|--------------------------------------------------------------------------
-*/
-
-const task =
-  JSON.parse(
-    localStorage.getItem(
-      "selectedTask"
-    ) || "{}"
+const params =
+  new URLSearchParams(
+    location.search
   );
 
-console.log("TASK:",task);
-
-/*
-|--------------------------------------------------------------------------
-| ADDRESS DATA
-|--------------------------------------------------------------------------
-*/
-
-const addressBo =
-  task.addressBo || {};
-
-/*
-|--------------------------------------------------------------------------
-| DATA
-|--------------------------------------------------------------------------
-*/
-
 const taskId =
-  task.id || "-";
+  params.get("taskId");
 
 const addressId =
-  addressBo.id || "-";
+  params.get("addressId");
 
-const latitude =
-  addressBo.latitude || "-";
+const lat =
+  params.get("lat");
 
-const longitude =
-  addressBo.longitude || "-";
-
-const address =
-  addressBo.street ||
-  addressBo.addressDetailLive ||
-  "-";
-
-/*
-|--------------------------------------------------------------------------
-| RENDER
-|--------------------------------------------------------------------------
-*/
+const lng =
+  params.get("lng");
 
 document.getElementById(
-  "taskIdText"
+  "showTaskId"
 ).innerText = taskId;
 
 document.getElementById(
-  "addressIdText"
+  "showAddressId"
 ).innerText = addressId;
 
 document.getElementById(
-  "latitudeText"
-).innerText = latitude;
+  "showLat"
+).innerText = lat;
 
 document.getElementById(
-  "longitudeText"
-).innerText = longitude;
+  "showLng"
+).innerText = lng;
 
 document.getElementById(
-  "addressText"
-).innerText = address;
-
-/*
-|--------------------------------------------------------------------------
-| PHOTO PREVIEW
-|--------------------------------------------------------------------------
-*/
-
-document.getElementById(
-  "photoFile"
-).addEventListener(
-  "change",
-  function(e){
-
-    const file =
-      e.target.files[0];
-
-    if(!file) return;
-
-    const url =
-      URL.createObjectURL(file);
-
-    const preview =
-      document.getElementById(
-        "photoPreview"
-      );
-
-    preview.src = url;
-
-    preview.style.display =
-      "block";
-
-  }
-);
-
-/*
-|--------------------------------------------------------------------------
-| RECORD
-|--------------------------------------------------------------------------
-*/
+  "maps"
+).src =
+  `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
 
 let recordedBlob = null;
 
-async function stopRecording(){
+document.getElementById(
+  "photoFile"
+).onchange = e => {
+
+  const file =
+    e.target.files[0];
+
+  if(!file) return;
+
+  const preview =
+    document.getElementById(
+      "preview"
+    );
+
+  preview.src =
+    URL.createObjectURL(file);
+
+  preview.style.display =
+    "block";
+
+};
+
+async function stopRecordingCustom(){
 
   const result =
     await recorder.stop();
@@ -461,187 +261,20 @@ async function stopRecording(){
   audio.style.display =
     "block";
 
+  document.getElementById(
+    "recordStatus"
+  ).innerHTML =
+    `<div class="recording">
+      Recording selesai
+    </div>`;
+
 }
 
-/*
-|--------------------------------------------------------------------------
-| ADD SCHEDULE
-|--------------------------------------------------------------------------
-*/
+async function saveSchedule(){
 
-async function addSchedule(){
-
-  try{
-
-    const scheduleTime =
-      document.getElementById(
-        "scheduleTime"
-      ).value;
-
-    const feedbackId =
-      document.getElementById(
-        "feedbackId"
-      ).value;
-
-    const remark =
-      document.getElementById(
-        "remark"
-      ).value;
-
-    const photo =
-      document.getElementById(
-        "photoFile"
-      ).files[0];
-
-    if(!photo){
-
-      alert("Foto wajib");
-
-      return;
-
-    }
-
-    if(!recordedBlob){
-
-      alert("Recording wajib");
-
-      return;
-
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | UPLOAD FOTO
-    |--------------------------------------------------------------------------
-    */
-
-    const photoForm =
-      new FormData();
-
-    photoForm.append(
-      "photo",
-      photo
-    );
-
-    const photoRes =
-      await fetch(
-        "/upload/photo",
-        {
-          method:"POST",
-          body:photoForm
-        }
-      );
-
-    const photoData =
-      await photoRes.json();
-
-    /*
-    |--------------------------------------------------------------------------
-    | UPLOAD AUDIO
-    |--------------------------------------------------------------------------
-    */
-
-    const audioForm =
-      new FormData();
-
-    audioForm.append(
-      "audio",
-      recordedBlob,
-      "recording.amr"
-    );
-
-    const audioRes =
-      await fetch(
-        "/upload/audio",
-        {
-          method:"POST",
-          body:audioForm
-        }
-      );
-
-    const audioData =
-      await audioRes.json();
-
-    /*
-    |--------------------------------------------------------------------------
-    | SAVE
-    |--------------------------------------------------------------------------
-    */
-
-    const res =
-      await fetch(
-        "/schedules/add",
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:JSON.stringify({
-
-            taskId,
-            addressId,
-
-            latitude,
-            longitude,
-
-            scheduleTime,
-            feedbackId,
-            remark,
-
-            address,
-
-            photoPath:
-              photoData.path,
-
-            audioPath:
-              audioData.path
-
-          })
-
-        }
-      );
-
-    const data =
-      await res.json();
-
-    const result =
-      document.getElementById(
-        "result"
-      );
-
-    if(data.success){
-
-      result.innerHTML = `
-        <p class="success">
-          Schedule berhasil dibuat
-        </p>
-      `;
-
-    }else{
-
-      result.innerHTML = `
-        <p class="error">
-          ${data.message}
-        </p>
-      `;
-
-    }
-
-  }catch(err){
-
-    document.getElementById(
-      "result"
-    ).innerHTML = `
-      <p class="error">
-        ${err.message}
-      </p>
-    `;
-
-  }
+  alert(
+    "Schedule berhasil dibuat"
+  );
 
 }
 
