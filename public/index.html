@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
@@ -19,7 +20,7 @@
     }
 
     .container{
-      max-width:700px;
+      max-width:800px;
       margin:auto;
       background:white;
       padding:20px;
@@ -74,6 +75,12 @@
       color:red;
     }
 
+    img{
+      width:100%;
+      border-radius:10px;
+      margin-top:10px;
+    }
+
   </style>
 
 </head>
@@ -88,7 +95,7 @@
   <input
     type="text"
     id="account"
-    placeholder="Account / Username"
+    placeholder="Username / Account"
   >
 
   <input
@@ -98,6 +105,7 @@
   >
 
   <select id="zizhangyi">
+
     <option value="1">
       Zizhangyi
     </option>
@@ -105,6 +113,7 @@
     <option value="0">
       Non Zizhangyi
     </option>
+
   </select>
 
   <button onclick="login()">
@@ -126,6 +135,12 @@
 </div>
 
 <script>
+
+/*
+|--------------------------------------------------------------------------
+| GLOBAL COOKIE
+|--------------------------------------------------------------------------
+*/
 
 let SESSION = "";
 let acw_tc = "";
@@ -157,27 +172,36 @@ async function login(){
         ).value
       );
 
-    const res = await fetch(
-      "/api/auth/login",
-      {
-        method:"POST",
+    const res =
+      await fetch(
+        "/api/auth/login",
+        {
+          method:"POST",
 
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
 
-        body:JSON.stringify({
-          account,
-          password,
-          zizhangyi
-        })
+          body:JSON.stringify({
+            account,
+            password,
+            zizhangyi
+          })
 
-      }
+        }
+      );
+
+    const text =
+      await res.text();
+
+    console.log(
+      "LOGIN RESPONSE:",
+      text
     );
 
     const data =
-      await res.json();
+      JSON.parse(text);
 
     const el =
       document.getElementById(
@@ -192,12 +216,6 @@ async function login(){
       acw_tc =
         data.cookies?.acw_tc || "";
 
-      el.innerHTML = `
-        <p class="success">
-          Login berhasil
-        </p>
-      `;
-
       console.log(
         "SESSION:",
         SESSION
@@ -208,17 +226,25 @@ async function login(){
         acw_tc
       );
 
+      el.innerHTML = `
+        <p class="success">
+          Login berhasil
+        </p>
+      `;
+
     }else{
 
       el.innerHTML = `
         <p class="error">
-          ${data.message || "Login gagal"}
+          ${data.message}
         </p>
       `;
 
     }
 
   }catch(err){
+
+    console.log(err);
 
     document.getElementById(
       "loginResult"
@@ -250,19 +276,36 @@ async function loadTasks(){
 
     }
 
-    const res = await fetch(
-      `/tasks?SESSION=${encodeURIComponent(
+    const url =
+      `/api/tasks?SESSION=${encodeURIComponent(
         SESSION
       )}&acw_tc=${encodeURIComponent(
         acw_tc
-      )}`,
-      {
-        method:"GET"
-      }
+      )}`;
+
+    console.log(
+      "TASK URL:",
+      url
+    );
+
+    const res =
+      await fetch(
+        url,
+        {
+          method:"GET"
+        }
+      );
+
+    const text =
+      await res.text();
+
+    console.log(
+      "TASK RESPONSE:",
+      text
     );
 
     const data =
-      await res.json();
+      JSON.parse(text);
 
     const container =
       document.getElementById(
@@ -339,6 +382,21 @@ async function loadTasks(){
         </p>
 
         <p>
+          <b>Province:</b>
+          ${task.addressBo?.province || "-"}
+        </p>
+
+        <p>
+          <b>City:</b>
+          ${task.addressBo?.city || "-"}
+        </p>
+
+        <p>
+          <b>District:</b>
+          ${task.addressBo?.district || "-"}
+        </p>
+
+        <p>
           <b>Address:</b>
           ${
             task.addressBo?.street ||
@@ -347,20 +405,17 @@ async function loadTasks(){
           }
         </p>
 
-        <p>
-          <b>Kecamatan:</b>
-          ${task.addressBo?.district || "-"}
-        </p>
-
-        <p>
-          <b>Kota:</b>
-          ${task.addressBo?.city || "-"}
-        </p>
-
-        <p>
-          <b>Provinsi:</b>
-          ${task.addressBo?.province || "-"}
-        </p>
+        ${
+          task.handHoldPhoto
+          ?
+          `
+            <img
+              src="${task.handHoldPhoto}"
+            >
+          `
+          :
+          ""
+        }
 
       `;
 
@@ -369,6 +424,8 @@ async function loadTasks(){
     });
 
   }catch(err){
+
+    console.log(err);
 
     document.getElementById(
       "tasks"
