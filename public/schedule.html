@@ -1,182 +1,208 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Schedule Feedback</title>
+<title>Schedule Feedback</title>
 
-  <style>
+<script src="/recorder.js"></script>
 
-    body{
-      font-family: Arial, sans-serif;
-      background:#f4f4f4;
-      margin:0;
-      padding:20px;
-    }
+<style>
 
-    .container{
-      max-width:900px;
-      margin:auto;
-      background:white;
-      padding:20px;
-      border-radius:10px;
-      box-shadow:0 0 10px rgba(0,0,0,0.1);
-    }
+body{
+  font-family:Arial;
+  background:#f4f4f4;
+  padding:20px;
+}
 
-    h1{
-      margin-top:0;
-    }
+.container{
+  max-width:900px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:10px;
+}
 
-    .card{
-      border:1px solid #ddd;
-      border-radius:10px;
-      padding:15px;
-      margin-top:15px;
-      background:#fafafa;
-    }
+input,
+select,
+textarea,
+button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  box-sizing:border-box;
+}
 
-    input,
-    textarea,
-    select{
-      width:100%;
-      padding:10px;
-      margin-top:10px;
-      border-radius:5px;
-      border:1px solid #ccc;
-      box-sizing:border-box;
-    }
+.card{
+  border:1px solid #ddd;
+  padding:15px;
+  border-radius:10px;
+  margin-top:15px;
+}
 
-    button{
-      width:100%;
-      padding:12px;
-      margin-top:15px;
-      border:none;
-      border-radius:5px;
-      background:#007bff;
-      color:white;
-      cursor:pointer;
-      font-size:16px;
-    }
+.success{
+  color:green;
+}
 
-    button:hover{
-      background:#0056b3;
-    }
+.error{
+  color:red;
+}
 
-    .danger{
-      background:#dc3545;
-    }
-
-    .danger:hover{
-      background:#b52a37;
-    }
-
-    .success{
-      color:green;
-    }
-
-    .error{
-      color:red;
-    }
-
-  </style>
+</style>
 
 </head>
 <body>
 
 <div class="container">
 
-  <h1>Schedule Feedback</h1>
+<h1>Schedule Feedback</h1>
 
-  <div class="card">
+<div class="card">
 
-    <h3>Tambah Jadwal</h3>
+<input type="text" id="taskId" placeholder="Task ID">
 
-    <input type="text" id="taskId" placeholder="Task ID">
+<input type="text" id="addressId" placeholder="Address ID">
 
-    <input type="text" id="addressId" placeholder="Address ID">
+<input type="datetime-local" id="scheduleTime">
 
-    <input type="datetime-local" id="scheduleTime">
+<select id="feedbackId">
 
-    <select id="feedbackId">
+<option value="149">PTP</option>
+<option value="150">Keluarga</option>
+<option value="154">Tidak di rumah</option>
 
-      <option value="149">PTP dari user</option>
+</select>
 
-      <option value="150">PTP dari keluarga/teman</option>
+<h3>Upload Foto</h3>
 
-      <option value="151">Titip pesan ke keluarga/teman</option>
+<input type="file" id="photoFile" accept="image/*">
 
-      <option value="154">Tidak ada di rumah</option>
+<h3>Recording</h3>
 
-      <option value="157">Tidak ketemu user</option>
+<button onclick="startRecording()">
+Start Recording
+</button>
 
-      <option value="158">User tolak bayar</option>
+<button onclick="stopRecording()">
+Stop Recording
+</button>
 
-      <option value="166">Sementara tidak ada uang</option>
+<div id="recordStatus"></div>
 
-      <option value="171">Pengaruh pandemi</option>
+<audio id="previewAudio" controls style="display:none;"></audio>
 
-      <option value="172">Mengajukan restrukturisasi hutang</option>
+<button onclick="addSchedule()">
+Tambah Jadwal
+</button>
 
-      <option value="206">Nasabah tidak mengizinkan melakukan Recording</option>
+<div id="result"></div>
 
-    </select>
-
-    <textarea id="remark" placeholder="Remark"></textarea>
-
-    <button onclick="addSchedule()">
-      Tambah Jadwal
-    </button>
-
-    <div id="addResult"></div>
-
-  </div>
-
-  <div class="card">
-
-    <h3>Daftar Jadwal</h3>
-
-    <button onclick="loadSchedules()">
-      Refresh Jadwal
-    </button>
-
-    <div id="scheduleList"></div>
-
-  </div>
+</div>
 
 </div>
 
 <script>
 
+let recordedBlob = null;
+
+async function stopRecording(){
+
+  const result = await recorder.stop();
+
+  recordedBlob = result.blob;
+
+  const audio =
+    document.getElementById("previewAudio");
+
+  audio.src = result.url;
+
+  audio.style.display = "block";
+
+}
+
 async function addSchedule(){
 
-  const taskId = document.getElementById("taskId").value;
-  const addressId = document.getElementById("addressId").value;
-
-  const scheduleTime = document.getElementById("scheduleTime").value;
-
-  const feedbackId = document.getElementById("feedbackId").value;
-
-  const remark = document.getElementById("remark").value;
-
-  const resultEl = document.getElementById("addResult");
-
-  if(!taskId){
-    alert("Task ID wajib diisi");
-    return;
-  }
-
-  if(!addressId){
-    alert("Address ID wajib diisi");
-    return;
-  }
-
-  if(!scheduleTime){
-    alert("Schedule time wajib diisi");
-    return;
-  }
-
   try{
+
+    const taskId =
+      document.getElementById("taskId").value;
+
+    const addressId =
+      document.getElementById("addressId").value;
+
+    const scheduleTime =
+      document.getElementById("scheduleTime").value;
+
+    const feedbackId =
+      document.getElementById("feedbackId").value;
+
+    const photo =
+      document.getElementById("photoFile").files[0];
+
+    if(!photo){
+
+      alert("Foto wajib");
+
+      return;
+
+    }
+
+    if(!recordedBlob){
+
+      alert("Recording wajib");
+
+      return;
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPLOAD FOTO
+    |--------------------------------------------------------------------------
+    */
+
+    const photoForm = new FormData();
+
+    photoForm.append("photo", photo);
+
+    const photoRes =
+      await fetch("/upload/photo",{
+        method:"POST",
+        body:photoForm
+      });
+
+    const photoData =
+      await photoRes.json();
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPLOAD AUDIO
+    |--------------------------------------------------------------------------
+    */
+
+    const audioForm = new FormData();
+
+    audioForm.append(
+      "audio",
+      recordedBlob,
+      "recording.amr"
+    );
+
+    const audioRes =
+      await fetch("/upload/audio",{
+        method:"POST",
+        body:audioForm
+      });
+
+    const audioData =
+      await audioRes.json();
+
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE SCHEDULE
+    |--------------------------------------------------------------------------
+    */
 
     const res = await fetch("/schedules/add",{
 
@@ -187,144 +213,50 @@ async function addSchedule(){
       },
 
       body:JSON.stringify({
+
         taskId,
         addressId,
         scheduleTime,
         feedbackId,
-        remark
+
+        photoPath:
+          photoData.path,
+
+        audioPath:
+          audioData.path
+
       })
 
     });
 
     const data = await res.json();
 
+    const result =
+      document.getElementById("result");
+
     if(data.success){
 
-      resultEl.innerHTML = `
-        <p class="success">
-          Jadwal berhasil ditambahkan
-        </p>
-      `;
-
-      loadSchedules();
+      result.innerHTML =
+        `<p class="success">
+          Jadwal berhasil dibuat
+        </p>`;
 
     }else{
 
-      resultEl.innerHTML = `
-        <p class="error">
+      result.innerHTML =
+        `<p class="error">
           ${data.message}
-        </p>
-      `;
+        </p>`;
 
     }
 
   }catch(err){
 
-    resultEl.innerHTML = `
-      <p class="error">
-        ${err.message}
-      </p>
-    `;
+    alert(err.message);
 
   }
 
 }
-
-async function loadSchedules(){
-
-  const res = await fetch("/schedules/list");
-
-  const data = await res.json();
-
-  const container = document.getElementById("scheduleList");
-
-  container.innerHTML = "";
-
-  if(!data.success){
-
-    container.innerHTML = `
-      <p class="error">${data.message}</p>
-    `;
-
-    return;
-
-  }
-
-  if(data.schedules.length === 0){
-
-    container.innerHTML = `
-      <p>Belum ada jadwal</p>
-    `;
-
-    return;
-
-  }
-
-  data.schedules.forEach((item,index)=>{
-
-    const div = document.createElement("div");
-
-    div.className = "card";
-
-    div.innerHTML = `
-
-      <p><b>Task ID:</b> ${item.taskId}</p>
-
-      <p><b>Address ID:</b> ${item.addressId}</p>
-
-      <p><b>Feedback ID:</b> ${item.feedbackId}</p>
-
-      <p><b>Schedule:</b> ${item.scheduleTime}</p>
-
-      <p><b>Remark:</b> ${item.remark || "-"}</p>
-
-      <button class="danger" onclick="deleteSchedule(${index})">
-        Hapus
-      </button>
-
-    `;
-
-    container.appendChild(div);
-
-  });
-
-}
-
-async function deleteSchedule(index){
-
-  if(!confirm("Hapus jadwal?")){
-    return;
-  }
-
-  const res = await fetch("/schedules/delete",{
-
-    method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
-    body:JSON.stringify({
-      index
-    })
-
-  });
-
-  const data = await res.json();
-
-  if(data.success){
-
-    loadSchedules();
-
-  }else{
-
-    alert(data.message);
-
-  }
-
-}
-
-loadSchedules();
 
 </script>
 
