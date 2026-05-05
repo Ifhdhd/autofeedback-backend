@@ -7,9 +7,11 @@
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1.0"
-/>
+>
 
-<title>Auto Feedback</title>
+<title>Schedule Feedback</title>
+
+<script src="/recorder.js"></script>
 
 <style>
 
@@ -25,14 +27,14 @@ body{
 }
 
 .container{
-  max-width:1200px;
+  max-width:1000px;
   margin:auto;
 }
 
 .header{
   background:#2563eb;
   color:white;
-  padding:25px;
+  padding:20px;
   border-radius:15px;
   margin-bottom:20px;
 }
@@ -43,14 +45,32 @@ body{
 
 .card{
   background:white;
-  border-radius:15px;
   padding:20px;
+  border-radius:15px;
   margin-bottom:20px;
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
+.info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.info-box{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  padding:15px;
+}
+
+.info-box p{
+  margin:5px 0;
+}
+
 input,
 select,
+textarea,
 button{
   width:100%;
   padding:12px;
@@ -72,6 +92,25 @@ button:hover{
   background:#1d4ed8;
 }
 
+.btn-danger{
+  background:#dc2626;
+}
+
+.btn-danger:hover{
+  background:#b91c1c;
+}
+
+.preview-img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+audio{
+  width:100%;
+  margin-top:10px;
+}
+
 .success{
   color:green;
 }
@@ -80,49 +119,10 @@ button:hover{
   color:red;
 }
 
-.task-card{
-  border:1px solid #e2e8f0;
-  border-radius:15px;
-  padding:20px;
-  margin-top:15px;
-  background:#fff;
-}
-
-.task-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-}
-
-.info-box{
-  background:#f8fafc;
-  padding:12px;
-  border-radius:10px;
-}
-
-.info-box p{
-  margin:5px 0;
-}
-
-img{
-  width:100%;
-  border-radius:10px;
-  margin-top:15px;
-}
-
-.action-grid{
+.record-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
-  margin-top:15px;
-}
-
-.btn-green{
-  background:#16a34a;
-}
-
-.btn-green:hover{
-  background:#15803d;
 }
 
 .badge{
@@ -131,16 +131,16 @@ img{
   border-radius:20px;
   background:#dbeafe;
   color:#1d4ed8;
-  font-size:12px;
+  font-size:13px;
 }
 
 @media(max-width:768px){
 
-  .task-grid{
+  .info-grid{
     grid-template-columns:1fr;
   }
 
-  .action-grid{
+  .record-grid{
     grid-template-columns:1fr;
   }
 
@@ -156,63 +156,300 @@ img{
 
   <div class="header">
 
-    <h1>Auto Feedback</h1>
+    <h1>Schedule Feedback</h1>
 
     <p>
-      Login • Load Task • Schedule • Checkin
+      Auto Feedback + Checkin + Upload
     </p>
 
   </div>
 
-  <!-- LOGIN -->
+  <!-- INFO -->
 
   <div class="card">
 
-    <h2>Login</h2>
+    <h2>Informasi Checkin</h2>
 
-    <input
-      type="text"
-      id="account"
-      placeholder="Username / Account"
-    >
+    <div class="info-grid">
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
+      <div class="info-box">
 
-    <select id="zizhangyi">
+        <p>
+          <b>Task ID</b>
+        </p>
 
-      <option value="1">
-        Zizhangyi
-      </option>
+        <p id="taskIdText">
+          -
+        </p>
 
-      <option value="0">
-        Non Zizhangyi
-      </option>
+      </div>
 
-    </select>
+      <div class="info-box">
 
-    <button onclick="login()">
-      Login
-    </button>
+        <p>
+          <b>Address ID</b>
+        </p>
 
-    <div id="loginResult"></div>
+        <p id="addressIdText">
+          -
+        </p>
+
+      </div>
+
+      <div class="info-box">
+
+        <p>
+          <b>Latitude Checkin</b>
+        </p>
+
+        <p id="latText">
+          -
+        </p>
+
+      </div>
+
+      <div class="info-box">
+
+        <p>
+          <b>Longitude Checkin</b>
+        </p>
+
+        <p id="lngText">
+          -
+        </p>
+
+      </div>
+
+      <div class="info-box">
+
+        <p>
+          <b>Distance</b>
+        </p>
+
+        <p>
+          <span id="distanceText">
+            0
+          </span>
+          meter
+        </p>
+
+      </div>
+
+      <div class="info-box">
+
+        <p>
+          <b>Status</b>
+        </p>
+
+        <span class="badge">
+          GPS Nasabah Aktif
+        </span>
+
+      </div>
+
+    </div>
 
   </div>
 
-  <!-- TASK -->
+  <!-- FORM -->
 
   <div class="card">
 
-    <h2>Tasks</h2>
+    <h2>Form Schedule</h2>
 
-    <button onclick="loadTasks()">
-      Load Tasks
+    <input
+      type="datetime-local"
+      id="scheduleTime"
+    >
+
+    <select id="feedbackId">
+
+      <optgroup label="PTP">
+
+        <option value="149">
+          PTP dari user
+        </option>
+
+        <option value="150">
+          PTP dari keluarga / teman
+        </option>
+
+        <option value="162">
+          Menunggu gajian
+        </option>
+
+        <option value="163">
+          Menunggu transfer
+        </option>
+
+        <option value="164">
+          Akan bayar nanti malam
+        </option>
+
+        <option value="165">
+          Akan bayar besok
+        </option>
+
+      </optgroup>
+
+      <optgroup label="Kondisi Nasabah">
+
+        <option value="166">
+          Sementara tidak ada uang
+        </option>
+
+        <option value="167">
+          User sakit
+        </option>
+
+        <option value="168">
+          Keluarga sakit
+        </option>
+
+        <option value="169">
+          Sedang ada musibah
+        </option>
+
+        <option value="170">
+          Kehilangan pekerjaan
+        </option>
+
+        <option value="171">
+          Pengaruh pandemi
+        </option>
+
+        <option value="172">
+          Mengajukan restrukturisasi hutang
+        </option>
+
+      </optgroup>
+
+      <optgroup label="Tidak Bertemu">
+
+        <option value="151">
+          Titip pesan ke keluarga / teman
+        </option>
+
+        <option value="152">
+          User sedang bekerja
+        </option>
+
+        <option value="153">
+          User sedang di luar kota
+        </option>
+
+        <option value="154">
+          Tidak ada di rumah
+        </option>
+
+        <option value="155">
+          Rumah kosong
+        </option>
+
+        <option value="156">
+          Pindah alamat
+        </option>
+
+        <option value="157">
+          Tidak ketemu user
+        </option>
+
+      </optgroup>
+
+      <optgroup label="Penolakan">
+
+        <option value="158">
+          User menolak bayar
+        </option>
+
+        <option value="159">
+          User marah
+        </option>
+
+        <option value="206">
+          Nasabah tidak mengizinkan recording
+        </option>
+
+      </optgroup>
+
+      <optgroup label="Data Tidak Valid">
+
+        <option value="160">
+          Nomor tidak aktif
+        </option>
+
+        <option value="161">
+          Salah alamat
+        </option>
+
+      </optgroup>
+
+    </select>
+
+  </div>
+
+  <!-- FOTO -->
+
+  <div class="card">
+
+    <h2>Upload Foto</h2>
+
+    <input
+      type="file"
+      id="photoFile"
+      accept="image/*"
+    >
+
+    <img
+      id="photoPreview"
+      class="preview-img"
+      style="display:none;"
+    >
+
+  </div>
+
+  <!-- RECORDING -->
+
+  <div class="card">
+
+    <h2>Recording Suara</h2>
+
+    <div class="record-grid">
+
+      <button
+        onclick="startRecording()"
+      >
+        Start Recording
+      </button>
+
+      <button
+        class="btn-danger"
+        onclick="stopRecordingCustom()"
+      >
+        Stop Recording
+      </button>
+
+    </div>
+
+    <div id="recordStatus"></div>
+
+    <audio
+      id="previewAudio"
+      controls
+      style="display:none;"
+    ></audio>
+
+  </div>
+
+  <!-- SAVE -->
+
+  <div class="card">
+
+    <button onclick="addSchedule()">
+      Simpan Schedule
     </button>
 
-    <div id="tasks"></div>
+    <div id="result"></div>
 
   </div>
 
@@ -222,43 +459,242 @@ img{
 
 /*
 |--------------------------------------------------------------------------
-| GLOBAL
+| URL PARAMS
 |--------------------------------------------------------------------------
 */
 
-let SESSION = "";
-let acw_tc = "";
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const taskId =
+  params.get("taskId") || "";
+
+const addressId =
+  params.get("addressId") || "";
+
+const lat =
+  params.get("lat") || "";
+
+const lng =
+  params.get("lng") || "";
+
+const distance =
+  params.get("distance") || "0";
 
 /*
 |--------------------------------------------------------------------------
-| LOGIN
+| SHOW DATA
 |--------------------------------------------------------------------------
 */
 
-async function login(){
+document.getElementById(
+  "taskIdText"
+).innerText = taskId;
+
+document.getElementById(
+  "addressIdText"
+).innerText = addressId;
+
+document.getElementById(
+  "latText"
+).innerText = lat;
+
+document.getElementById(
+  "lngText"
+).innerText = lng;
+
+document.getElementById(
+  "distanceText"
+).innerText = distance;
+
+/*
+|--------------------------------------------------------------------------
+| PREVIEW IMAGE
+|--------------------------------------------------------------------------
+*/
+
+document.getElementById(
+  "photoFile"
+).addEventListener(
+  "change",
+  event => {
+
+    const file =
+      event.target.files[0];
+
+    if(!file) return;
+
+    const preview =
+      document.getElementById(
+        "photoPreview"
+      );
+
+    preview.src =
+      URL.createObjectURL(file);
+
+    preview.style.display =
+      "block";
+
+  }
+);
+
+/*
+|--------------------------------------------------------------------------
+| RECORDING
+|--------------------------------------------------------------------------
+*/
+
+let recordedBlob = null;
+
+async function stopRecordingCustom(){
 
   try{
 
-    const account =
-      document.getElementById(
-        "account"
-      ).value;
+    const result =
+      await recorder.stop();
 
-    const password =
-      document.getElementById(
-        "password"
-      ).value;
+    recordedBlob =
+      result.blob;
 
-    const zizhangyi =
-      Number(
-        document.getElementById(
-          "zizhangyi"
-        ).value
+    const audio =
+      document.getElementById(
+        "previewAudio"
       );
 
-    const res =
+    audio.src =
+      result.url;
+
+    audio.style.display =
+      "block";
+
+    document.getElementById(
+      "recordStatus"
+    ).innerHTML = `
+      <p class="success">
+        Recording selesai
+        (${Math.floor(result.duration / 1000)} detik)
+      </p>
+    `;
+
+  }catch(err){
+
+    alert(err.message);
+
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| SAVE SCHEDULE
+|--------------------------------------------------------------------------
+*/
+
+async function addSchedule(){
+
+  try{
+
+    const scheduleTime =
+      document.getElementById(
+        "scheduleTime"
+      ).value;
+
+    const feedbackId =
+      document.getElementById(
+        "feedbackId"
+      ).value;
+
+    const photo =
+      document.getElementById(
+        "photoFile"
+      ).files[0];
+
+    if(!scheduleTime){
+
+      alert(
+        "Schedule time wajib"
+      );
+
+      return;
+
+    }
+
+    if(!photo){
+
+      alert(
+        "Foto wajib"
+      );
+
+      return;
+
+    }
+
+    if(!recordedBlob){
+
+      alert(
+        "Recording wajib"
+      );
+
+      return;
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPLOAD FILE
+    |--------------------------------------------------------------------------
+    */
+
+    const form =
+      new FormData();
+
+    form.append(
+      "photo",
+      photo
+    );
+
+    form.append(
+      "audio",
+      recordedBlob,
+      "recording.amr"
+    );
+
+    form.append(
+      "userId",
+      taskId
+    );
+
+    const uploadRes =
       await fetch(
-        "/api/auth/login",
+        "/upload",
+        {
+          method:"POST",
+          body:form
+        }
+      );
+
+    const uploadData =
+      await uploadRes.json();
+
+    if(!uploadData.success){
+
+      throw new Error(
+        uploadData.message
+      );
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE SCHEDULE
+    |--------------------------------------------------------------------------
+    */
+
+    const saveRes =
+      await fetch(
+        "/schedules/add",
         {
 
           method:"POST",
@@ -270,34 +706,44 @@ async function login(){
 
           body:JSON.stringify({
 
-            account,
-            password,
-            zizhangyi
+            taskId,
+            addressId,
+
+            latitude:lat,
+            longitude:lng,
+            distance,
+
+            scheduleTime,
+            feedbackId,
+
+            photoPath:
+              uploadData.data
+              ?.photo
+              ?.path || "",
+
+            audioPath:
+              uploadData.data
+              ?.audio
+              ?.path || ""
 
           })
 
         }
       );
 
-    const data =
-      await res.json();
+    const saveData =
+      await saveRes.json();
 
     const result =
       document.getElementById(
-        "loginResult"
+        "result"
       );
 
-    if(data.success){
-
-      SESSION =
-        data.cookies?.SESSION || "";
-
-      acw_tc =
-        data.cookies?.acw_tc || "";
+    if(saveData.success){
 
       result.innerHTML = `
         <p class="success">
-          Login berhasil
+          Schedule berhasil dibuat
         </p>
       `;
 
@@ -305,7 +751,7 @@ async function login(){
 
       result.innerHTML = `
         <p class="error">
-          ${data.message}
+          ${saveData.message}
         </p>
       `;
 
@@ -313,8 +759,10 @@ async function login(){
 
   }catch(err){
 
+    console.log(err);
+
     document.getElementById(
-      "loginResult"
+      "result"
     ).innerHTML = `
       <p class="error">
         ${err.message}
@@ -322,362 +770,6 @@ async function login(){
     `;
 
   }
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| LOAD TASKS
-|--------------------------------------------------------------------------
-*/
-
-async function loadTasks(){
-
-  try{
-
-    if(!SESSION){
-
-      alert("Login dulu");
-
-      return;
-
-    }
-
-    const url =
-      `/api/tasks?SESSION=${encodeURIComponent(
-        SESSION
-      )}&acw_tc=${encodeURIComponent(
-        acw_tc
-      )}`;
-
-    const res =
-      await fetch(url);
-
-    const data =
-      await res.json();
-
-    const container =
-      document.getElementById(
-        "tasks"
-      );
-
-    container.innerHTML = "";
-
-    if(!data.success){
-
-      container.innerHTML = `
-        <p class="error">
-          ${data.message}
-        </p>
-      `;
-
-      return;
-
-    }
-
-    const tasks =
-      data.data || [];
-
-    if(tasks.length === 0){
-
-      container.innerHTML = `
-        <p>
-          Tidak ada task
-        </p>
-      `;
-
-      return;
-
-    }
-
-    tasks.forEach(task => {
-
-      console.log(
-        "TASK FULL:",
-        task
-      );
-
-      /*
-      |--------------------------------------------------------------------------
-      | ADDRESS
-      |--------------------------------------------------------------------------
-      */
-
-      const addressId =
-        task.addressBo?.id ||
-        task.addressId ||
-        "";
-
-      /*
-      |--------------------------------------------------------------------------
-      | LAT LNG
-      |--------------------------------------------------------------------------
-      */
-
-      const latitude =
-        task.addressBo?.addressLatitude ||
-        task.addressBo?.latitude ||
-        task.addressLatitude ||
-        "";
-
-      const longitude =
-        task.addressBo?.addressLongitude ||
-        task.addressBo?.longitude ||
-        task.addressLongitude ||
-        "";
-
-      /*
-      |--------------------------------------------------------------------------
-      | DISTANCE
-      |--------------------------------------------------------------------------
-      */
-
-      const distance =
-        task.addressBo?.distance ||
-        "0";
-
-      const div =
-        document.createElement(
-          "div"
-        );
-
-      div.className =
-        "task-card";
-
-      div.innerHTML = `
-
-        <h3>
-          ${task.userName || "-"}
-        </h3>
-
-        <span class="badge">
-          DPD ${task.dpd || 0}
-        </span>
-
-        <div class="task-grid">
-
-          <div class="info-box">
-
-            <p>
-              <b>Task ID</b>
-            </p>
-
-            <p>
-              ${task.id}
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>Address ID</b>
-            </p>
-
-            <p>
-              ${addressId}
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>Latitude</b>
-            </p>
-
-            <p>
-              ${latitude}
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>Longitude</b>
-            </p>
-
-            <p>
-              ${longitude}
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>Distance</b>
-            </p>
-
-            <p>
-              ${distance} meter
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>Phone</b>
-            </p>
-
-            <p>
-              ${task.phoneNumber || "-"}
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>Province</b>
-            </p>
-
-            <p>
-              ${task.addressBo?.province || "-"}
-            </p>
-
-          </div>
-
-          <div class="info-box">
-
-            <p>
-              <b>City</b>
-            </p>
-
-            <p>
-              ${task.addressBo?.city || "-"}
-            </p>
-
-          </div>
-
-        </div>
-
-        <div class="info-box" style="margin-top:15px;">
-
-          <p>
-            <b>Alamat</b>
-          </p>
-
-          <p>
-            ${
-              task.addressBo?.street ||
-              task.addressBo?.addressDetailLive ||
-              "-"
-            }
-          </p>
-
-        </div>
-
-        ${
-          task.handHoldPhoto
-          ?
-          `
-          <img
-            src="${task.handHoldPhoto}"
-          >
-          `
-          :
-          ""
-        }
-
-        <div class="action-grid">
-
-          <button
-            class="btn-green"
-            onclick='openSchedule(${JSON.stringify(task)})'
-          >
-            Schedule
-          </button>
-
-        </div>
-
-      `;
-
-      container.appendChild(div);
-
-    });
-
-  }catch(err){
-
-    document.getElementById(
-      "tasks"
-    ).innerHTML = `
-      <p class="error">
-        ${err.message}
-      </p>
-    `;
-
-  }
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| OPEN SCHEDULE
-|--------------------------------------------------------------------------
-*/
-
-function openSchedule(task){
-
-  console.log(
-    "OPEN SCHEDULE TASK:",
-    task
-  );
-
-  /*
-  |--------------------------------------------------------------------------
-  | ADDRESS
-  |--------------------------------------------------------------------------
-  */
-
-  const addressId =
-    task.addressBo?.id ||
-    task.addressId ||
-    "";
-
-  /*
-  |--------------------------------------------------------------------------
-  | LAT LNG
-  |--------------------------------------------------------------------------
-  */
-
-  const lat =
-    task.addressBo?.addressLatitude ||
-    task.addressBo?.latitude ||
-    task.addressLatitude ||
-    "";
-
-  const lng =
-    task.addressBo?.addressLongitude ||
-    task.addressBo?.longitude ||
-    task.addressLongitude ||
-    "";
-
-  /*
-  |--------------------------------------------------------------------------
-  | DISTANCE
-  |--------------------------------------------------------------------------
-  */
-
-  const distance =
-    task.addressBo?.distance ||
-    "0";
-
-  /*
-  |--------------------------------------------------------------------------
-  | OPEN PAGE
-  |--------------------------------------------------------------------------
-  */
-
-  window.location.href =
-    `/schedule.html
-    ?taskId=${encodeURIComponent(task.id)}
-    &addressId=${encodeURIComponent(addressId)}
-    &lat=${encodeURIComponent(lat)}
-    &lng=${encodeURIComponent(lng)}
-    &distance=${encodeURIComponent(distance)}`;
 
 }
 
