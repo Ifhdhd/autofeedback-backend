@@ -11,80 +11,51 @@ const {
 |--------------------------------------------------------------------------
 */
 
-router.get(
-  "/tasks",
-  async (req, res) => {
+router.get("/", async (req, res) => {
 
-    try {
+  try {
 
-      /*
-      |------------------------------------------------------------------
-      | COOKIE
-      |------------------------------------------------------------------
-      */
+    const {
+      SESSION,
+      acw_tc
+    } = req.query;
 
-      const cookie =
-        req.headers.cookie;
+    if(!SESSION){
 
-      if (!cookie) {
-
-        return res.status(401)
-          .json({
-            success: false,
-            message:
-              "Cookie SESSION tidak ditemukan"
-          });
-
-      }
-
-      /*
-      |------------------------------------------------------------------
-      | GET TASKS
-      |------------------------------------------------------------------
-      */
-
-      const result =
-        await getTasks(cookie);
-
-      /*
-      |------------------------------------------------------------------
-      | FAILED
-      |------------------------------------------------------------------
-      */
-
-      if (!result.success) {
-
-        return res.status(400)
-          .json(result);
-
-      }
-
-      /*
-      |------------------------------------------------------------------
-      | SUCCESS
-      |------------------------------------------------------------------
-      */
-
-      return res.json({
-        success: true,
-        total:
-          result.data.length,
-        data:
-          result.data
+      return res.status(401).json({
+        success:false,
+        message:"SESSION kosong"
       });
-
-    } catch (err) {
-
-      return res.status(500)
-        .json({
-          success: false,
-          message:
-            err.message
-        });
 
     }
 
+    const cookie =
+      `SESSION=${SESSION}; acw_tc=${acw_tc}`;
+
+    const result =
+      await getTasks(cookie);
+
+    if(!result.success){
+
+      return res.status(400).json(result);
+
+    }
+
+    return res.json({
+      success:true,
+      total: result.data.length,
+      data: result.data
+    });
+
+  } catch(err){
+
+    return res.status(500).json({
+      success:false,
+      message: err.message
+    });
+
   }
-);
+
+});
 
 module.exports = router;
