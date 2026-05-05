@@ -6,6 +6,7 @@
   <title>Auto Feedback</title>
 
   <style>
+
     body{
       font-family: Arial, sans-serif;
       background:#f4f4f4;
@@ -26,7 +27,9 @@
       margin-top:0;
     }
 
-    input, select, textarea{
+    input,
+    select,
+    textarea{
       width:100%;
       padding:10px;
       margin-top:10px;
@@ -67,12 +70,8 @@
       color:red;
     }
 
-    audio{
-      width:100%;
-      margin-top:10px;
-    }
-
   </style>
+
 </head>
 <body>
 
@@ -82,16 +81,31 @@
 
   <h3>Login</h3>
 
-  <input type="text" id="account" placeholder="Account / Username">
+  <input
+    type="text"
+    id="account"
+    placeholder="Account / Username"
+  >
 
-  <input type="password" id="password" placeholder="Password">
+  <input
+    type="password"
+    id="password"
+    placeholder="Password"
+  >
 
   <select id="zizhangyi">
-    <option value="1">Zizhangyi</option>
-    <option value="0">Non Zizhangyi</option>
+    <option value="1">
+      Zizhangyi
+    </option>
+
+    <option value="0">
+      Non Zizhangyi
+    </option>
   </select>
 
-  <button onclick="login()">Login</button>
+  <button onclick="login()">
+    Login
+  </button>
 
   <div id="loginResult"></div>
 
@@ -99,7 +113,9 @@
 
   <h3>Tasks</h3>
 
-  <button onclick="loadTasks()">Load Tasks</button>
+  <button onclick="loadTasks()">
+    Load Tasks
+  </button>
 
   <div id="tasks"></div>
 
@@ -121,43 +137,132 @@ async function login(){
   try{
 
     const account =
-      document.getElementById("account").value;
+      document.getElementById(
+        "account"
+      ).value;
 
     const password =
-      document.getElementById("password").value;
+      document.getElementById(
+        "password"
+      ).value;
 
     const zizhangyi =
       Number(
-        document.getElementById("zizhangyi").value
+        document.getElementById(
+          "zizhangyi"
+        ).value
       );
+
+    /*
+    |--------------------------------------------------------------------------
+    | REQUEST LOGIN
+    |--------------------------------------------------------------------------
+    */
 
     const res = await fetch(
       "/api/auth/login",
       {
+
         method:"POST",
+
         headers:{
           "Content-Type":"application/json"
         },
+
         body:JSON.stringify({
+
           account,
           password,
           zizhangyi
+
         })
+
       }
     );
 
-    const data = await res.json();
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    const data =
+      await res.json();
+
+    console.log(data);
 
     const el =
-      document.getElementById("loginResult");
+      document.getElementById(
+        "loginResult"
+      );
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUCCESS
+    |--------------------------------------------------------------------------
+    */
 
     if(data.success){
 
-      SESSION =
-        data.cookies?.SESSION || "";
+      /*
+      |--------------------------------------------------------------------------
+      | GET COOKIES
+      |--------------------------------------------------------------------------
+      */
 
-      acw_tc =
-        data.cookies?.acw_tc || "";
+      const cookies =
+        data.data?.cookies || [];
+
+      SESSION = "";
+      acw_tc = "";
+
+      cookies.forEach(cookie => {
+
+        /*
+        |--------------------------------------------------------------------------
+        | SESSION
+        |--------------------------------------------------------------------------
+        */
+
+        if(
+          cookie.includes("SESSION=")
+        ){
+
+          SESSION =
+            cookie
+              .split("SESSION=")[1]
+              .split(";")[0];
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | acw_tc
+        |--------------------------------------------------------------------------
+        */
+
+        if(
+          cookie.includes("acw_tc=")
+        ){
+
+          acw_tc =
+            cookie
+              .split("acw_tc=")[1]
+              .split(";")[0];
+
+        }
+
+      });
+
+      console.log(
+        "SESSION:",
+        SESSION
+      );
+
+      console.log(
+        "acw_tc:",
+        acw_tc
+      );
 
       el.innerHTML = `
         <p class="success">
@@ -166,6 +271,12 @@ async function login(){
       `;
 
     }else{
+
+      /*
+      |--------------------------------------------------------------------------
+      | FAILED
+      |--------------------------------------------------------------------------
+      */
 
       el.innerHTML = `
         <p class="error">
@@ -176,6 +287,8 @@ async function login(){
     }
 
   }catch(err){
+
+    console.log(err);
 
     document.getElementById(
       "loginResult"
@@ -202,23 +315,40 @@ async function loadTasks(){
     const res = await fetch(
       "/api/tasks/list",
       {
+
         method:"POST",
+
         headers:{
           "Content-Type":"application/json"
         },
+
         body:JSON.stringify({
+
           SESSION,
           acw_tc
+
         })
+
       }
     );
 
-    const data = await res.json();
+    const data =
+      await res.json();
+
+    console.log(data);
 
     const container =
-      document.getElementById("tasks");
+      document.getElementById(
+        "tasks"
+      );
 
     container.innerHTML = "";
+
+    /*
+    |--------------------------------------------------------------------------
+    | FAILED
+    |--------------------------------------------------------------------------
+    */
 
     if(!data.success){
 
@@ -231,6 +361,12 @@ async function loadTasks(){
       return;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | TASKS
+    |--------------------------------------------------------------------------
+    */
+
     data.tasks.forEach(task => {
 
       const div =
@@ -239,6 +375,7 @@ async function loadTasks(){
       div.className = "card";
 
       div.innerHTML = `
+
         <h4>
           ${task.name || "-"}
         </h4>
@@ -271,6 +408,7 @@ async function loadTasks(){
         >
 
         <select id="feedback-${task.taskId}">
+
           <option value="149">
             PTP dari user
           </option>
@@ -310,6 +448,7 @@ async function loadTasks(){
           <option value="206">
             Nasabah tidak mengizinkan recording
           </option>
+
         </select>
 
         <textarea
@@ -327,6 +466,7 @@ async function loadTasks(){
         </button>
 
         <div id="result-${task.taskId}"></div>
+
       `;
 
       container.appendChild(div);
@@ -334,6 +474,8 @@ async function loadTasks(){
     });
 
   }catch(err){
+
+    console.log(err);
 
     document.getElementById(
       "tasks"
@@ -447,16 +589,33 @@ async function submitFeedback(
     resultEl.innerHTML =
       "Processing...";
 
+    /*
+    |--------------------------------------------------------------------------
+    | REQUEST
+    |--------------------------------------------------------------------------
+    */
+
     const res = await fetch(
       "/api/feedback/submit",
       {
+
         method:"POST",
+
         body:formData
+
       }
     );
 
     const data =
       await res.json();
+
+    console.log(data);
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUCCESS
+    |--------------------------------------------------------------------------
+    */
 
     if(data.success){
 
@@ -468,6 +627,12 @@ async function submitFeedback(
 
     }else{
 
+      /*
+      |--------------------------------------------------------------------------
+      | FAILED
+      |--------------------------------------------------------------------------
+      */
+
       resultEl.innerHTML = `
         <p class="error">
           ${data.message}
@@ -477,6 +642,8 @@ async function submitFeedback(
     }
 
   }catch(err){
+
+    console.log(err);
 
     document.getElementById(
       `result-${taskId}`
