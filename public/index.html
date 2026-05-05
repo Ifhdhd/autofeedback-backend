@@ -2,7 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
   <title>Auto Feedback</title>
 
   <style>
@@ -153,106 +157,46 @@ async function login(){
         ).value
       );
 
-    /*
-    |--------------------------------------------------------------------------
-    | REQUEST LOGIN
-    |--------------------------------------------------------------------------
-    */
-
     const res = await fetch(
       "/api/auth/login",
       {
-
         method:"POST",
 
         headers:{
-          "Content-Type":"application/json"
+          "Content-Type":
+            "application/json"
         },
 
         body:JSON.stringify({
-
           account,
           password,
           zizhangyi
-
         })
 
       }
     );
 
-    /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
     const data =
       await res.json();
-
-    console.log(data);
 
     const el =
       document.getElementById(
         "loginResult"
       );
 
-    /*
-    |--------------------------------------------------------------------------
-    | SUCCESS
-    |--------------------------------------------------------------------------
-    */
-
     if(data.success){
 
-      /*
-      |--------------------------------------------------------------------------
-      | GET COOKIES
-      |--------------------------------------------------------------------------
-      */
+      SESSION =
+        data.cookies?.SESSION || "";
 
-      const cookies =
-        data.data?.cookies || [];
+      acw_tc =
+        data.cookies?.acw_tc || "";
 
-      SESSION = "";
-      acw_tc = "";
-
-      cookies.forEach(cookie => {
-
-        /*
-        |--------------------------------------------------------------------------
-        | SESSION
-        |--------------------------------------------------------------------------
-        */
-
-        if(
-          cookie.includes("SESSION=")
-        ){
-
-          SESSION =
-            cookie
-              .split("SESSION=")[1]
-              .split(";")[0];
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | acw_tc
-        |--------------------------------------------------------------------------
-        */
-
-        if(
-          cookie.includes("acw_tc=")
-        ){
-
-          acw_tc =
-            cookie
-              .split("acw_tc=")[1]
-              .split(";")[0];
-
-        }
-
-      });
+      el.innerHTML = `
+        <p class="success">
+          Login berhasil
+        </p>
+      `;
 
       console.log(
         "SESSION:",
@@ -264,19 +208,7 @@ async function login(){
         acw_tc
       );
 
-      el.innerHTML = `
-        <p class="success">
-          Login berhasil
-        </p>
-      `;
-
     }else{
-
-      /*
-      |--------------------------------------------------------------------------
-      | FAILED
-      |--------------------------------------------------------------------------
-      */
 
       el.innerHTML = `
         <p class="error">
@@ -287,8 +219,6 @@ async function login(){
     }
 
   }catch(err){
-
-    console.log(err);
 
     document.getElementById(
       "loginResult"
@@ -312,30 +242,27 @@ async function loadTasks(){
 
   try{
 
+    if(!SESSION){
+
+      alert("Login dulu");
+
+      return;
+
+    }
+
     const res = await fetch(
-      "/api/tasks/list",
+      `/tasks?SESSION=${encodeURIComponent(
+        SESSION
+      )}&acw_tc=${encodeURIComponent(
+        acw_tc
+      )}`,
       {
-
-        method:"POST",
-
-        headers:{
-          "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify({
-
-          SESSION,
-          acw_tc
-
-        })
-
+        method:"GET"
       }
     );
 
     const data =
       await res.json();
-
-    console.log(data);
 
     const container =
       document.getElementById(
@@ -343,12 +270,6 @@ async function loadTasks(){
       );
 
     container.innerHTML = "";
-
-    /*
-    |--------------------------------------------------------------------------
-    | FAILED
-    |--------------------------------------------------------------------------
-    */
 
     if(!data.success){
 
@@ -359,113 +280,87 @@ async function loadTasks(){
       `;
 
       return;
+
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | TASKS
-    |--------------------------------------------------------------------------
-    */
+    const tasks =
+      data.data || [];
 
-    data.tasks.forEach(task => {
+    if(tasks.length === 0){
+
+      container.innerHTML = `
+        <p>
+          Tidak ada task
+        </p>
+      `;
+
+      return;
+
+    }
+
+    tasks.forEach(task => {
 
       const div =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       div.className = "card";
 
       div.innerHTML = `
 
-        <h4>
-          ${task.name || "-"}
-        </h4>
+        <h3>
+          ${task.userName || "-"}
+        </h3>
 
         <p>
           <b>Task ID:</b>
-          ${task.taskId}
+          ${task.id}
         </p>
 
         <p>
-          <b>Address:</b>
-          ${task.address || "-"}
+          <b>Case ID:</b>
+          ${task.caseId || "-"}
         </p>
 
         <p>
           <b>Phone:</b>
-          ${task.phone || "-"}
+          ${task.phoneNumber || "-"}
         </p>
 
-        <input
-          type="file"
-          accept="image/*"
-          id="image-${task.taskId}"
-        >
+        <p>
+          <b>Debt:</b>
+          Rp ${task.formatDebt || "0"}
+        </p>
 
-        <input
-          type="file"
-          accept=".amr,audio/*"
-          id="audio-${task.taskId}"
-        >
+        <p>
+          <b>DPD:</b>
+          ${task.dpd || 0}
+        </p>
 
-        <select id="feedback-${task.taskId}">
+        <p>
+          <b>Address:</b>
+          ${
+            task.addressBo?.street ||
+            task.addressBo?.addressDetailLive ||
+            "-"
+          }
+        </p>
 
-          <option value="149">
-            PTP dari user
-          </option>
+        <p>
+          <b>Kecamatan:</b>
+          ${task.addressBo?.district || "-"}
+        </p>
 
-          <option value="150">
-            PTP dari keluarga/teman
-          </option>
+        <p>
+          <b>Kota:</b>
+          ${task.addressBo?.city || "-"}
+        </p>
 
-          <option value="151">
-            Titip pesan ke keluarga/teman
-          </option>
-
-          <option value="154">
-            Tidak ada di rumah
-          </option>
-
-          <option value="157">
-            Tidak ketemu user
-          </option>
-
-          <option value="158">
-            User tolak bayar
-          </option>
-
-          <option value="166">
-            Sementara tidak ada uang
-          </option>
-
-          <option value="171">
-            Pengaruh pandemi
-          </option>
-
-          <option value="172">
-            Mengajukan restrukturisasi hutang
-          </option>
-
-          <option value="206">
-            Nasabah tidak mengizinkan recording
-          </option>
-
-        </select>
-
-        <textarea
-          id="remark-${task.taskId}"
-          placeholder="Remark"
-        ></textarea>
-
-        <button
-          onclick="submitFeedback(
-            ${task.taskId},
-            ${task.addressId}
-          )"
-        >
-          Submit Feedback
-        </button>
-
-        <div id="result-${task.taskId}"></div>
+        <p>
+          <b>Provinsi:</b>
+          ${task.addressBo?.province || "-"}
+        </p>
 
       `;
 
@@ -475,178 +370,8 @@ async function loadTasks(){
 
   }catch(err){
 
-    console.log(err);
-
     document.getElementById(
       "tasks"
-    ).innerHTML = `
-      <p class="error">
-        ${err.message}
-      </p>
-    `;
-
-  }
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| SUBMIT FEEDBACK
-|--------------------------------------------------------------------------
-*/
-
-async function submitFeedback(
-  taskId,
-  addressId
-){
-
-  try{
-
-    const imageFile =
-      document.getElementById(
-        `image-${taskId}`
-      ).files[0];
-
-    const audioFile =
-      document.getElementById(
-        `audio-${taskId}`
-      ).files[0];
-
-    const feedbackId =
-      Number(
-        document.getElementById(
-          `feedback-${taskId}`
-        ).value
-      );
-
-    const remark =
-      document.getElementById(
-        `remark-${taskId}`
-      ).value;
-
-    const resultEl =
-      document.getElementById(
-        `result-${taskId}`
-      );
-
-    if(!imageFile){
-
-      alert("Upload foto");
-
-      return;
-    }
-
-    if(!audioFile){
-
-      alert("Upload audio");
-
-      return;
-    }
-
-    const formData =
-      new FormData();
-
-    formData.append(
-      "image",
-      imageFile
-    );
-
-    formData.append(
-      "audio",
-      audioFile
-    );
-
-    formData.append(
-      "taskId",
-      taskId
-    );
-
-    formData.append(
-      "addressId",
-      addressId
-    );
-
-    formData.append(
-      "feedbackId",
-      feedbackId
-    );
-
-    formData.append(
-      "remark",
-      remark
-    );
-
-    formData.append(
-      "SESSION",
-      SESSION
-    );
-
-    formData.append(
-      "acw_tc",
-      acw_tc
-    );
-
-    resultEl.innerHTML =
-      "Processing...";
-
-    /*
-    |--------------------------------------------------------------------------
-    | REQUEST
-    |--------------------------------------------------------------------------
-    */
-
-    const res = await fetch(
-      "/api/feedback/submit",
-      {
-
-        method:"POST",
-
-        body:formData
-
-      }
-    );
-
-    const data =
-      await res.json();
-
-    console.log(data);
-
-    /*
-    |--------------------------------------------------------------------------
-    | SUCCESS
-    |--------------------------------------------------------------------------
-    */
-
-    if(data.success){
-
-      resultEl.innerHTML = `
-        <p class="success">
-          Feedback berhasil dikirim
-        </p>
-      `;
-
-    }else{
-
-      /*
-      |--------------------------------------------------------------------------
-      | FAILED
-      |--------------------------------------------------------------------------
-      */
-
-      resultEl.innerHTML = `
-        <p class="error">
-          ${data.message}
-        </p>
-      `;
-
-    }
-
-  }catch(err){
-
-    console.log(err);
-
-    document.getElementById(
-      `result-${taskId}`
     ).innerHTML = `
       <p class="error">
         ${err.message}
