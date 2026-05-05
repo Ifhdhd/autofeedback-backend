@@ -7,7 +7,7 @@
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1.0"
->
+/>
 
 <title>Schedule Feedback</title>
 
@@ -16,14 +16,16 @@
 <style>
 
 *{
+  margin:0;
+  padding:0;
   box-sizing:border-box;
 }
 
 body{
-  margin:0;
-  padding:20px;
-  background:#f1f5f9;
   font-family:Arial,sans-serif;
+  background:#eef2f7;
+  color:#1e293b;
+  padding:20px;
 }
 
 .container{
@@ -31,41 +33,31 @@ body{
   margin:auto;
 }
 
-.header{
-  background:#2563eb;
-  color:white;
-  padding:20px;
-  border-radius:15px;
-  margin-bottom:20px;
-}
-
-.header h1{
-  margin:0;
-}
-
 .card{
   background:white;
+  border-radius:18px;
   padding:20px;
-  border-radius:15px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.08);
   margin-bottom:20px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
-.info-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
+h1{
+  margin-bottom:20px;
 }
 
-.info-box{
-  background:#f8fafc;
-  border:1px solid #e2e8f0;
-  border-radius:10px;
-  padding:15px;
+h2{
+  margin-bottom:15px;
 }
 
-.info-box p{
-  margin:5px 0;
+.info{
+  margin-top:10px;
+  font-size:15px;
+  line-height:1.6;
+}
+
+.label{
+  font-weight:bold;
+  color:#111827;
 }
 
 input,
@@ -74,384 +66,263 @@ textarea,
 button{
   width:100%;
   padding:12px;
-  margin-top:10px;
   border-radius:10px;
-  border:1px solid #cbd5e1;
-  font-size:15px;
+  border:1px solid #d1d5db;
+  margin-top:12px;
+  font-size:14px;
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
 }
 
 button{
+  border:none;
   background:#2563eb;
   color:white;
-  border:none;
   cursor:pointer;
-  font-weight:bold;
 }
 
 button:hover{
   background:#1d4ed8;
 }
 
-.btn-danger{
-  background:#dc2626;
-}
-
-.btn-danger:hover{
-  background:#b91c1c;
-}
-
-.preview-img{
-  width:100%;
-  border-radius:10px;
-  margin-top:10px;
-}
-
-audio{
-  width:100%;
-  margin-top:10px;
-}
-
 .success{
   color:green;
+  margin-top:15px;
 }
 
 .error{
   color:red;
+  margin-top:15px;
 }
 
-.record-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+.audio-box{
+  margin-top:15px;
+}
+
+.photo-preview{
+  width:100%;
+  max-height:300px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-top:15px;
 }
 
 .badge{
   display:inline-block;
-  padding:5px 10px;
-  border-radius:20px;
   background:#dbeafe;
   color:#1d4ed8;
+  padding:8px 14px;
+  border-radius:999px;
+  margin-top:10px;
   font-size:13px;
-}
-
-@media(max-width:768px){
-
-  .info-grid{
-    grid-template-columns:1fr;
-  }
-
-  .record-grid{
-    grid-template-columns:1fr;
-  }
-
+  font-weight:bold;
 }
 
 </style>
 
 </head>
-
 <body>
 
 <div class="container">
 
-  <div class="header">
+<h1>Schedule Feedback</h1>
 
-    <h1>Schedule Feedback</h1>
+<!-- INFO TASK -->
 
-    <p>
-      Auto Feedback + Checkin + Upload
-    </p>
+<div class="card">
 
+  <h2>Informasi Checkin</h2>
+
+  <div class="badge">
+    Auto Coordinate Enabled
   </div>
 
-  <!-- INFO -->
+  <div class="info">
+    <span class="label">
+      Task ID:
+    </span>
 
-  <div class="card">
+    <span id="taskIdText">
+      -
+    </span>
+  </div>
 
-    <h2>Informasi Checkin</h2>
+  <div class="info">
+    <span class="label">
+      Address ID:
+    </span>
 
-    <div class="info-grid">
+    <span id="addressIdText">
+      -
+    </span>
+  </div>
 
-      <div class="info-box">
+  <div class="info">
+    <span class="label">
+      Latitude Checkin:
+    </span>
 
-        <p>
-          <b>Task ID</b>
-        </p>
+    <span id="latitudeText">
+      -
+    </span>
+  </div>
 
-        <p id="taskIdText">
-          -
-        </p>
+  <div class="info">
+    <span class="label">
+      Longitude Checkin:
+    </span>
 
-      </div>
+    <span id="longitudeText">
+      -
+    </span>
+  </div>
 
-      <div class="info-box">
+  <div class="info">
+    <span class="label">
+      Distance:
+    </span>
 
-        <p>
-          <b>Address ID</b>
-        </p>
+    <span>
+      0 Meter
+    </span>
+  </div>
 
-        <p id="addressIdText">
-          -
-        </p>
+  <div class="info">
+    <span class="label">
+      Address:
+    </span>
 
-      </div>
-
-      <div class="info-box">
-
-        <p>
-          <b>Latitude Checkin</b>
-        </p>
-
-        <p id="latText">
-          -
-        </p>
-
-      </div>
-
-      <div class="info-box">
-
-        <p>
-          <b>Longitude Checkin</b>
-        </p>
-
-        <p id="lngText">
-          -
-        </p>
-
-      </div>
-
-      <div class="info-box">
-
-        <p>
-          <b>Distance</b>
-        </p>
-
-        <p>
-          <span id="distanceText">
-            0
-          </span>
-          meter
-        </p>
-
-      </div>
-
-      <div class="info-box">
-
-        <p>
-          <b>Status</b>
-        </p>
-
-        <span class="badge">
-          GPS Nasabah Aktif
-        </span>
-
-      </div>
-
+    <div id="addressText">
+      -
     </div>
-
   </div>
 
-  <!-- FORM -->
+</div>
 
-  <div class="card">
+<!-- FORM -->
 
-    <h2>Form Schedule</h2>
+<div class="card">
 
-    <input
-      type="datetime-local"
-      id="scheduleTime"
-    >
+  <h2>Buat Schedule</h2>
 
-    <select id="feedbackId">
+  <input
+    type="datetime-local"
+    id="scheduleTime"
+  >
 
-      <optgroup label="PTP">
+  <select id="feedbackId">
 
-        <option value="149">
-          PTP dari user
-        </option>
+    <option value="149">
+      PTP dari user
+    </option>
 
-        <option value="150">
-          PTP dari keluarga / teman
-        </option>
+    <option value="150">
+      PTP dari keluarga / teman
+    </option>
 
-        <option value="162">
-          Menunggu gajian
-        </option>
+    <option value="151">
+      Titip pesan ke keluarga / teman
+    </option>
 
-        <option value="163">
-          Menunggu transfer
-        </option>
+    <option value="154">
+      Tidak ada di rumah
+    </option>
 
-        <option value="164">
-          Akan bayar nanti malam
-        </option>
+    <option value="157">
+      Tidak ketemu user
+    </option>
 
-        <option value="165">
-          Akan bayar besok
-        </option>
+    <option value="158">
+      User tolak bayar
+    </option>
 
-      </optgroup>
+    <option value="166">
+      Sementara tidak ada uang
+    </option>
 
-      <optgroup label="Kondisi Nasabah">
+    <option value="171">
+      Pengaruh pandemi
+    </option>
 
-        <option value="166">
-          Sementara tidak ada uang
-        </option>
+    <option value="172">
+      Mengajukan restrukturisasi hutang
+    </option>
 
-        <option value="167">
-          User sakit
-        </option>
+    <option value="206">
+      Nasabah tidak mengizinkan recording
+    </option>
 
-        <option value="168">
-          Keluarga sakit
-        </option>
+  </select>
 
-        <option value="169">
-          Sedang ada musibah
-        </option>
+  <textarea
+    id="remark"
+    placeholder="Remark"
+  ></textarea>
 
-        <option value="170">
-          Kehilangan pekerjaan
-        </option>
+</div>
 
-        <option value="171">
-          Pengaruh pandemi
-        </option>
+<!-- FOTO -->
 
-        <option value="172">
-          Mengajukan restrukturisasi hutang
-        </option>
+<div class="card">
 
-      </optgroup>
+  <h2>Upload Foto</h2>
 
-      <optgroup label="Tidak Bertemu">
+  <input
+    type="file"
+    id="photoFile"
+    accept="image/*"
+  >
 
-        <option value="151">
-          Titip pesan ke keluarga / teman
-        </option>
+  <img
+    id="photoPreview"
+    class="photo-preview"
+    style="display:none;"
+  >
 
-        <option value="152">
-          User sedang bekerja
-        </option>
+</div>
 
-        <option value="153">
-          User sedang di luar kota
-        </option>
+<!-- RECORDING -->
 
-        <option value="154">
-          Tidak ada di rumah
-        </option>
+<div class="card">
 
-        <option value="155">
-          Rumah kosong
-        </option>
+  <h2>Recording</h2>
 
-        <option value="156">
-          Pindah alamat
-        </option>
+  <button onclick="startRecording()">
+    Start Recording
+  </button>
 
-        <option value="157">
-          Tidak ketemu user
-        </option>
+  <button onclick="stopRecording()">
+    Stop Recording
+  </button>
 
-      </optgroup>
+  <div id="recordStatus"></div>
 
-      <optgroup label="Penolakan">
-
-        <option value="158">
-          User menolak bayar
-        </option>
-
-        <option value="159">
-          User marah
-        </option>
-
-        <option value="206">
-          Nasabah tidak mengizinkan recording
-        </option>
-
-      </optgroup>
-
-      <optgroup label="Data Tidak Valid">
-
-        <option value="160">
-          Nomor tidak aktif
-        </option>
-
-        <option value="161">
-          Salah alamat
-        </option>
-
-      </optgroup>
-
-    </select>
-
-  </div>
-
-  <!-- FOTO -->
-
-  <div class="card">
-
-    <h2>Upload Foto</h2>
-
-    <input
-      type="file"
-      id="photoFile"
-      accept="image/*"
-    >
-
-    <img
-      id="photoPreview"
-      class="preview-img"
-      style="display:none;"
-    >
-
-  </div>
-
-  <!-- RECORDING -->
-
-  <div class="card">
-
-    <h2>Recording Suara</h2>
-
-    <div class="record-grid">
-
-      <button
-        onclick="startRecording()"
-      >
-        Start Recording
-      </button>
-
-      <button
-        class="btn-danger"
-        onclick="stopRecordingCustom()"
-      >
-        Stop Recording
-      </button>
-
-    </div>
-
-    <div id="recordStatus"></div>
+  <div class="audio-box">
 
     <audio
       id="previewAudio"
       controls
-      style="display:none;"
+      style="display:none;width:100%;"
     ></audio>
 
   </div>
 
-  <!-- SAVE -->
+</div>
 
-  <div class="card">
+<!-- SUBMIT -->
 
-    <button onclick="addSchedule()">
-      Simpan Schedule
-    </button>
+<div class="card">
 
-    <div id="result"></div>
+  <button onclick="addSchedule()">
+    Tambah Schedule
+  </button>
 
-  </div>
+  <div id="result"></div>
+
+</div>
 
 </div>
 
@@ -459,33 +330,54 @@ audio{
 
 /*
 |--------------------------------------------------------------------------
-| URL PARAMS
+| TASK DATA
 |--------------------------------------------------------------------------
 */
 
-const params =
-  new URLSearchParams(
-    window.location.search
+const task =
+  JSON.parse(
+    localStorage.getItem(
+      "selectedTask"
+    ) || "{}"
   );
 
-const taskId =
-  params.get("taskId") || "";
-
-const addressId =
-  params.get("addressId") || "";
-
-const lat =
-  params.get("lat") || "";
-
-const lng =
-  params.get("lng") || "";
-
-const distance =
-  params.get("distance") || "0";
+console.log("TASK:",task);
 
 /*
 |--------------------------------------------------------------------------
-| SHOW DATA
+| ADDRESS DATA
+|--------------------------------------------------------------------------
+*/
+
+const addressBo =
+  task.addressBo || {};
+
+/*
+|--------------------------------------------------------------------------
+| DATA
+|--------------------------------------------------------------------------
+*/
+
+const taskId =
+  task.id || "-";
+
+const addressId =
+  addressBo.id || "-";
+
+const latitude =
+  addressBo.latitude || "-";
+
+const longitude =
+  addressBo.longitude || "-";
+
+const address =
+  addressBo.street ||
+  addressBo.addressDetailLive ||
+  "-";
+
+/*
+|--------------------------------------------------------------------------
+| RENDER
 |--------------------------------------------------------------------------
 */
 
@@ -498,20 +390,20 @@ document.getElementById(
 ).innerText = addressId;
 
 document.getElementById(
-  "latText"
-).innerText = lat;
+  "latitudeText"
+).innerText = latitude;
 
 document.getElementById(
-  "lngText"
-).innerText = lng;
+  "longitudeText"
+).innerText = longitude;
 
 document.getElementById(
-  "distanceText"
-).innerText = distance;
+  "addressText"
+).innerText = address;
 
 /*
 |--------------------------------------------------------------------------
-| PREVIEW IMAGE
+| PHOTO PREVIEW
 |--------------------------------------------------------------------------
 */
 
@@ -519,20 +411,22 @@ document.getElementById(
   "photoFile"
 ).addEventListener(
   "change",
-  event => {
+  function(e){
 
     const file =
-      event.target.files[0];
+      e.target.files[0];
 
     if(!file) return;
+
+    const url =
+      URL.createObjectURL(file);
 
     const preview =
       document.getElementById(
         "photoPreview"
       );
 
-    preview.src =
-      URL.createObjectURL(file);
+    preview.src = url;
 
     preview.style.display =
       "block";
@@ -542,53 +436,36 @@ document.getElementById(
 
 /*
 |--------------------------------------------------------------------------
-| RECORDING
+| RECORD
 |--------------------------------------------------------------------------
 */
 
 let recordedBlob = null;
 
-async function stopRecordingCustom(){
+async function stopRecording(){
 
-  try{
+  const result =
+    await recorder.stop();
 
-    const result =
-      await recorder.stop();
+  recordedBlob =
+    result.blob;
 
-    recordedBlob =
-      result.blob;
-
-    const audio =
-      document.getElementById(
-        "previewAudio"
-      );
-
-    audio.src =
-      result.url;
-
-    audio.style.display =
-      "block";
-
+  const audio =
     document.getElementById(
-      "recordStatus"
-    ).innerHTML = `
-      <p class="success">
-        Recording selesai
-        (${Math.floor(result.duration / 1000)} detik)
-      </p>
-    `;
+      "previewAudio"
+    );
 
-  }catch(err){
+  audio.src =
+    result.url;
 
-    alert(err.message);
-
-  }
+  audio.style.display =
+    "block";
 
 }
 
 /*
 |--------------------------------------------------------------------------
-| SAVE SCHEDULE
+| ADD SCHEDULE
 |--------------------------------------------------------------------------
 */
 
@@ -606,26 +483,19 @@ async function addSchedule(){
         "feedbackId"
       ).value;
 
+    const remark =
+      document.getElementById(
+        "remark"
+      ).value;
+
     const photo =
       document.getElementById(
         "photoFile"
       ).files[0];
 
-    if(!scheduleTime){
-
-      alert(
-        "Schedule time wajib"
-      );
-
-      return;
-
-    }
-
     if(!photo){
 
-      alert(
-        "Foto wajib"
-      );
+      alert("Foto wajib");
 
       return;
 
@@ -633,9 +503,7 @@ async function addSchedule(){
 
     if(!recordedBlob){
 
-      alert(
-        "Recording wajib"
-      );
+      alert("Recording wajib");
 
       return;
 
@@ -643,56 +511,64 @@ async function addSchedule(){
 
     /*
     |--------------------------------------------------------------------------
-    | UPLOAD FILE
+    | UPLOAD FOTO
     |--------------------------------------------------------------------------
     */
 
-    const form =
+    const photoForm =
       new FormData();
 
-    form.append(
+    photoForm.append(
       "photo",
       photo
     );
 
-    form.append(
+    const photoRes =
+      await fetch(
+        "/upload/photo",
+        {
+          method:"POST",
+          body:photoForm
+        }
+      );
+
+    const photoData =
+      await photoRes.json();
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPLOAD AUDIO
+    |--------------------------------------------------------------------------
+    */
+
+    const audioForm =
+      new FormData();
+
+    audioForm.append(
       "audio",
       recordedBlob,
       "recording.amr"
     );
 
-    form.append(
-      "userId",
-      taskId
-    );
-
-    const uploadRes =
+    const audioRes =
       await fetch(
-        "/upload",
+        "/upload/audio",
         {
           method:"POST",
-          body:form
+          body:audioForm
         }
       );
 
-    const uploadData =
-      await uploadRes.json();
-
-    if(!uploadData.success){
-
-      throw new Error(
-        uploadData.message
-      );
-
-    }
+    const audioData =
+      await audioRes.json();
 
     /*
     |--------------------------------------------------------------------------
-    | SAVE SCHEDULE
+    | SAVE
     |--------------------------------------------------------------------------
     */
 
-    const saveRes =
+    const res =
       await fetch(
         "/schedules/add",
         {
@@ -709,37 +585,35 @@ async function addSchedule(){
             taskId,
             addressId,
 
-            latitude:lat,
-            longitude:lng,
-            distance,
+            latitude,
+            longitude,
 
             scheduleTime,
             feedbackId,
+            remark,
+
+            address,
 
             photoPath:
-              uploadData.data
-              ?.photo
-              ?.path || "",
+              photoData.path,
 
             audioPath:
-              uploadData.data
-              ?.audio
-              ?.path || ""
+              audioData.path
 
           })
 
         }
       );
 
-    const saveData =
-      await saveRes.json();
+    const data =
+      await res.json();
 
     const result =
       document.getElementById(
         "result"
       );
 
-    if(saveData.success){
+    if(data.success){
 
       result.innerHTML = `
         <p class="success">
@@ -751,15 +625,13 @@ async function addSchedule(){
 
       result.innerHTML = `
         <p class="error">
-          ${saveData.message}
+          ${data.message}
         </p>
       `;
 
     }
 
   }catch(err){
-
-    console.log(err);
 
     document.getElementById(
       "result"
