@@ -12,16 +12,35 @@ const BASE_URL = "https://ez-co-app.tin.group";
 async function queryTasks(cookie) {
   try {
 
-    const response = await axios.get(
-      `${BASE_URL}/app/offline/task/list`,
-      {
-        headers: buildHeaders(cookie)
+    let allTasks = [];
+    let pageNo = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+
+      const response = await axios.get(
+        `${BASE_URL}/app/offline/task/queryTaskList?category=1&pageNo=${pageNo}&orderBy=1&pageSize=100`,
+        {
+          headers: buildHeaders(cookie)
+        }
+      );
+
+      const tasks =
+        response.data?.data?.data || [];
+
+      allTasks.push(...tasks);
+
+      if (tasks.length < 100) {
+        hasMore = false;
+      } else {
+        pageNo++;
       }
-    );
+
+    }
 
     return {
       success: true,
-      data: response.data
+      data: allTasks
     };
 
   } catch (err) {
@@ -139,5 +158,8 @@ module.exports = {
   queryTasks,
   queryTaskAddress,
   checkFeedback,
-  getConfig
+  getConfig,
+
+  // FIX
+  getTasks: queryTasks
 };
