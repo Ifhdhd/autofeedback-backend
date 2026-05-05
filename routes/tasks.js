@@ -2,14 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  getTasks
+  queryTasks
 } = require("../services/taskService");
-
-/*
-|--------------------------------------------------------------------------
-| GET TASKS
-|--------------------------------------------------------------------------
-*/
 
 router.get("/", async (req, res) => {
 
@@ -20,11 +14,11 @@ router.get("/", async (req, res) => {
       acw_tc
     } = req.query;
 
-    if(!SESSION){
+    if (!SESSION) {
 
       return res.status(401).json({
-        success:false,
-        message:"SESSION kosong"
+        success: false,
+        message: "SESSION kosong"
       });
 
     }
@@ -33,24 +27,23 @@ router.get("/", async (req, res) => {
       `SESSION=${SESSION}; acw_tc=${acw_tc}`;
 
     const result =
-      await getTasks(cookie);
+      await queryTasks(cookie);
 
-    if(!result.success){
+    if (!result.success) {
 
       return res.status(400).json(result);
 
     }
 
     return res.json({
-      success:true,
-      total: result.data.length,
+      success: true,
       data: result.data
     });
 
-  } catch(err){
+  } catch (err) {
 
     return res.status(500).json({
-      success:false,
+      success: false,
       message: err.message
     });
 
