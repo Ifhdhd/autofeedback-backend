@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Auto Feedback</title>
 
   <style>
 
     body{
-      font-family: Arial, sans-serif;
+      font-family:Arial, sans-serif;
       background:#f4f4f4;
       margin:0;
       padding:20px;
     }
 
     .container{
-      max-width:800px;
+      max-width:1000px;
       margin:auto;
       background:white;
       padding:20px;
@@ -32,9 +28,15 @@
       margin-top:0;
     }
 
-    input,
-    select,
-    textarea{
+    .card{
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:15px;
+      margin-top:15px;
+      background:#fafafa;
+    }
+
+    input{
       width:100%;
       padding:10px;
       margin-top:10px;
@@ -44,27 +46,19 @@
     }
 
     button{
-      margin-top:15px;
+      width:100%;
       padding:12px;
+      margin-top:10px;
       border:none;
+      border-radius:5px;
       background:#007bff;
       color:white;
-      border-radius:5px;
       cursor:pointer;
-      width:100%;
       font-size:16px;
     }
 
     button:hover{
       background:#0056b3;
-    }
-
-    .card{
-      border:1px solid #ddd;
-      padding:15px;
-      border-radius:8px;
-      margin-top:15px;
-      background:#fafafa;
     }
 
     .success{
@@ -75,10 +69,10 @@
       color:red;
     }
 
-    img{
-      width:100%;
-      border-radius:10px;
-      margin-top:10px;
+    .task-title{
+      font-size:18px;
+      font-weight:bold;
+      margin-bottom:10px;
     }
 
   </style>
@@ -88,49 +82,47 @@
 
 <div class="container">
 
-  <h1>Auto Feedback</h1>
+  <h1>Auto Feedback Dashboard</h1>
 
-  <h3>Login</h3>
+  <!-- LOGIN -->
 
-  <input
-    type="text"
-    id="account"
-    placeholder="Username / Account"
-  >
+  <div class="card">
 
-  <input
-    type="password"
-    id="password"
-    placeholder="Password"
-  >
+    <h3>Login</h3>
 
-  <select id="zizhangyi">
+    <input
+      type="text"
+      id="username"
+      placeholder="Username"
+    >
 
-    <option value="1">
-      Zizhangyi
-    </option>
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+    >
 
-    <option value="0">
-      Non Zizhangyi
-    </option>
+    <button onclick="login()">
+      Login
+    </button>
 
-  </select>
+    <div id="loginResult"></div>
 
-  <button onclick="login()">
-    Login
-  </button>
+  </div>
 
-  <div id="loginResult"></div>
+  <!-- LOAD TASK -->
 
-  <hr>
+  <div class="card">
 
-  <h3>Tasks</h3>
+    <h3>Task List</h3>
 
-  <button onclick="loadTasks()">
-    Load Tasks
-  </button>
+    <button onclick="loadTasks()">
+      Load Task
+    </button>
 
-  <div id="tasks"></div>
+    <div id="taskList"></div>
+
+  </div>
 
 </div>
 
@@ -153,80 +145,59 @@ let acw_tc = "";
 
 async function login(){
 
+  const username =
+    document.getElementById("username").value;
+
+  const password =
+    document.getElementById("password").value;
+
+  const resultEl =
+    document.getElementById("loginResult");
+
+  if(!username || !password){
+
+    alert("Username dan password wajib");
+
+    return;
+
+  }
+
   try{
 
-    const account =
-      document.getElementById(
-        "account"
-      ).value;
+    const res = await fetch("/api/auth/login",{
 
-    const password =
-      document.getElementById(
-        "password"
-      ).value;
+      method:"POST",
 
-    const zizhangyi =
-      Number(
-        document.getElementById(
-          "zizhangyi"
-        ).value
-      );
+      headers:{
+        "Content-Type":"application/json"
+      },
 
-    const res =
-      await fetch(
-        "/api/auth/login",
-        {
-          method:"POST",
+      body:JSON.stringify({
+        username,
+        password
+      })
 
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
+    });
 
-          body:JSON.stringify({
-            account,
-            password,
-            zizhangyi
-          })
-
-        }
-      );
-
-    const text =
-      await res.text();
-
-    console.log(
-      "LOGIN RESPONSE:",
-      text
-    );
-
-    const data =
-      JSON.parse(text);
-
-    const el =
-      document.getElementById(
-        "loginResult"
-      );
+    const data = await res.json();
 
     if(data.success){
 
-      SESSION =
-        data.cookies?.SESSION || "";
+      SESSION = data.data.SESSION;
 
-      acw_tc =
-        data.cookies?.acw_tc || "";
+      acw_tc = data.data.acw_tc;
 
-      console.log(
-        "SESSION:",
+      localStorage.setItem(
+        "SESSION",
         SESSION
       );
 
-      console.log(
-        "acw_tc:",
+      localStorage.setItem(
+        "acw_tc",
         acw_tc
       );
 
-      el.innerHTML = `
+      resultEl.innerHTML = `
         <p class="success">
           Login berhasil
         </p>
@@ -234,7 +205,7 @@ async function login(){
 
     }else{
 
-      el.innerHTML = `
+      resultEl.innerHTML = `
         <p class="error">
           ${data.message}
         </p>
@@ -244,11 +215,7 @@ async function login(){
 
   }catch(err){
 
-    console.log(err);
-
-    document.getElementById(
-      "loginResult"
-    ).innerHTML = `
+    resultEl.innerHTML = `
       <p class="error">
         ${err.message}
       </p>
@@ -266,59 +233,45 @@ async function login(){
 
 async function loadTasks(){
 
+  const container =
+    document.getElementById("taskList");
+
+  container.innerHTML =
+    "<p>Loading...</p>";
+
   try{
+
+    SESSION =
+      localStorage.getItem("SESSION");
+
+    acw_tc =
+      localStorage.getItem("acw_tc");
 
     if(!SESSION){
 
-      alert("Login dulu");
+      container.innerHTML = `
+        <p class="error">
+          Silahkan login dulu
+        </p>
+      `;
 
       return;
 
     }
 
-    const url =
-      `/api/tasks?SESSION=${encodeURIComponent(
-        SESSION
-      )}&acw_tc=${encodeURIComponent(
-        acw_tc
-      )}`;
+    const res = await fetch(
 
-    console.log(
-      "TASK URL:",
-      url
+      `/api/tasks?SESSION=${SESSION}&acw_tc=${acw_tc}`
+
     );
 
-    const res =
-      await fetch(
-        url,
-        {
-          method:"GET"
-        }
-      );
-
-    const text =
-      await res.text();
-
-    console.log(
-      "TASK RESPONSE:",
-      text
-    );
-
-    const data =
-      JSON.parse(text);
-
-    const container =
-      document.getElementById(
-        "tasks"
-      );
-
-    container.innerHTML = "";
+    const data = await res.json();
 
     if(!data.success){
 
       container.innerHTML = `
         <p class="error">
-          ${data.message}
+          ${JSON.stringify(data.message)}
         </p>
       `;
 
@@ -326,35 +279,82 @@ async function loadTasks(){
 
     }
 
-    const tasks =
-      data.data || [];
+    container.innerHTML = "";
 
-    if(tasks.length === 0){
+    /*
+    |--------------------------------------------------------------------------
+    | ALL TASKS
+    |--------------------------------------------------------------------------
+    */
 
-      container.innerHTML = `
-        <p>
-          Tidak ada task
-        </p>
-      `;
-
-      return;
-
-    }
-
-    tasks.forEach(task => {
+    data.data.forEach(task => {
 
       const div =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       div.className = "card";
 
+      /*
+      |--------------------------------------------------------------------------
+      | ADDRESS LIST
+      |--------------------------------------------------------------------------
+      */
+
+      let addressHtml = "";
+
+      if(task.addressList){
+
+        task.addressList.forEach(address => {
+
+          addressHtml += `
+
+            <div
+              style="
+                border:1px solid #ddd;
+                border-radius:10px;
+                padding:10px;
+                margin-top:10px;
+                background:white;
+              "
+            >
+
+              <p>
+                <b>Address ID:</b>
+                ${address.id}
+              </p>
+
+              <p>
+                <b>Nama:</b>
+                ${address.name || "-"}
+              </p>
+
+              <p>
+                <b>Alamat:</b>
+                ${address.address || "-"}
+              </p>
+
+              <button onclick="
+                goToSchedule(
+                  '${task.id}',
+                  '${address.id}'
+                )
+              ">
+                Schedule Feedback
+              </button>
+
+            </div>
+
+          `;
+
+        });
+
+      }
+
       div.innerHTML = `
 
-        <h3>
-          ${task.userName || "-"}
-        </h3>
+        <div class="task-title">
+          ${task.name || "No Title"}
+        </div>
 
         <p>
           <b>Task ID:</b>
@@ -362,60 +362,13 @@ async function loadTasks(){
         </p>
 
         <p>
-          <b>Case ID:</b>
-          ${task.caseId || "-"}
+          <b>Total Address:</b>
+          ${task.addressList
+            ? task.addressList.length
+            : 0}
         </p>
 
-        <p>
-          <b>Phone:</b>
-          ${task.phoneNumber || "-"}
-        </p>
-
-        <p>
-          <b>Debt:</b>
-          Rp ${task.formatDebt || "0"}
-        </p>
-
-        <p>
-          <b>DPD:</b>
-          ${task.dpd || 0}
-        </p>
-
-        <p>
-          <b>Province:</b>
-          ${task.addressBo?.province || "-"}
-        </p>
-
-        <p>
-          <b>City:</b>
-          ${task.addressBo?.city || "-"}
-        </p>
-
-        <p>
-          <b>District:</b>
-          ${task.addressBo?.district || "-"}
-        </p>
-
-        <p>
-          <b>Address:</b>
-          ${
-            task.addressBo?.street ||
-            task.addressBo?.addressDetailLive ||
-            "-"
-          }
-        </p>
-
-        ${
-          task.handHoldPhoto
-          ?
-          `
-            <img
-              src="${task.handHoldPhoto}"
-            >
-          `
-          :
-          ""
-        }
+        ${addressHtml}
 
       `;
 
@@ -425,11 +378,7 @@ async function loadTasks(){
 
   }catch(err){
 
-    console.log(err);
-
-    document.getElementById(
-      "tasks"
-    ).innerHTML = `
+    container.innerHTML = `
       <p class="error">
         ${err.message}
       </p>
@@ -438,6 +387,35 @@ async function loadTasks(){
   }
 
 }
+
+/*
+|--------------------------------------------------------------------------
+| GO TO SCHEDULE
+|--------------------------------------------------------------------------
+*/
+
+function goToSchedule(
+  taskId,
+  addressId
+){
+
+  window.location.href =
+
+    `/schedule.html?taskId=${taskId}&addressId=${addressId}`;
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| AUTO LOAD SESSION
+|--------------------------------------------------------------------------
+*/
+
+SESSION =
+  localStorage.getItem("SESSION") || "";
+
+acw_tc =
+  localStorage.getItem("acw_tc") || "";
 
 </script>
 
