@@ -14,6 +14,8 @@ function buildHeaders(cookie = "") {
 
     "Content-Type": "application/json",
 
+    "X-DESENSITIZE": "true",
+
     "X-COUNTRY-ID": "1",
 
     countryCode: "ID",
