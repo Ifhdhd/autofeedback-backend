@@ -15,8 +15,11 @@ function buildHeaders(cookie = "") {
     "Content-Type": "application/json",
 
     "X-COUNTRY-ID": "1",
+
     countryCode: "ID",
+
     timeZoneId: "Asia/Jakarta",
+
     country: "ID",
 
     "Accept-Language": "in-ID",
@@ -29,6 +32,7 @@ function buildHeaders(cookie = "") {
     osVersion: "10",
 
     versionCode: "300",
+
     versionName: "2.9.2-release",
 
     "User-Agent":
@@ -47,12 +51,26 @@ function buildHeaders(cookie = "") {
 */
 
 async function login({
+
   account,
-  pwd,
+
+  password,
+
+  zizhangyi = 1,
+
   appVersion = "1"
+
 }) {
 
   try {
+
+    /*
+    |--------------------------------------------------------------------------
+    | MD5 PASSWORD
+    |--------------------------------------------------------------------------
+    */
+
+    const pwd = password;
 
     /*
     |--------------------------------------------------------------------------
@@ -68,8 +86,12 @@ async function login({
         {
 
           account,
+
           pwd,
-          appVersion
+
+          appVersion,
+
+          zizhangyi
 
         },
 
@@ -92,11 +114,14 @@ async function login({
       response.headers["set-cookie"] || [];
 
     let SESSION = "";
+
     let acw_tc = "";
 
     rawCookies.forEach(cookie => {
 
-      if(cookie.includes("SESSION=")){
+      if (
+        cookie.includes("SESSION=")
+      ) {
 
         SESSION =
           cookie
@@ -105,7 +130,9 @@ async function login({
 
       }
 
-      if(cookie.includes("acw_tc=")){
+      if (
+        cookie.includes("acw_tc=")
+      ) {
 
         acw_tc =
           cookie
@@ -135,6 +162,7 @@ async function login({
       cookies: {
 
         SESSION,
+
         acw_tc
 
       }
@@ -164,6 +192,9 @@ async function login({
 }
 
 module.exports = {
+
   login,
+
   buildHeaders
+
 };
