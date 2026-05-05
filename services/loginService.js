@@ -1,13 +1,5 @@
-// services/loginService.js
-
 const axios = require("axios");
 const md5 = require("md5");
-
-/*
-|--------------------------------------------------------------------------
-| BUILD HEADERS
-|--------------------------------------------------------------------------
-*/
 
 function buildHeaders(cookie = "") {
 
@@ -47,19 +39,15 @@ function buildHeaders(cookie = "") {
 
 }
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN
-|--------------------------------------------------------------------------
-*/
-
 async function login({
 
   account,
 
   password,
 
-  appVersion = "0"
+  appVersion = "0",
+
+  zizhangyi = 0
 
 }) {
 
@@ -90,7 +78,9 @@ async function login({
 
           pwd,
 
-          appVersion
+          appVersion,
+
+          zizhangyi
 
         },
 
@@ -105,7 +95,7 @@ async function login({
 
     /*
     |--------------------------------------------------------------------------
-    | GET COOKIES
+    | GET COOKIE
     |--------------------------------------------------------------------------
     */
 
@@ -142,12 +132,6 @@ async function login({
 
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | SUCCESS
-    |--------------------------------------------------------------------------
-    */
-
     return {
 
       success: true,
@@ -157,9 +141,6 @@ async function login({
 
       data:
         response.data.data,
-
-      raw:
-        response.data,
 
       cookies: {
 
