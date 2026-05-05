@@ -28,7 +28,7 @@ function buildHeaders(cookie = "") {
 
     osVersion: "10",
 
-    versionCode: "122",
+    versionCode: "300",
     versionName: "2.9.2-release",
 
     "User-Agent":
