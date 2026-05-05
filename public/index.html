@@ -110,176 +110,379 @@
 let SESSION = "";
 let acw_tc = "";
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
+
 async function login(){
 
-  const account = document.getElementById("account").value;
-  const password = document.getElementById("password").value;
-  const zizhangyi = Number(document.getElementById("zizhangyi").value);
+  try{
 
-  const res = await fetch("/auth/login",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      account,
-      password,
-      zizhangyi
-    })
-  });
+    const account =
+      document.getElementById("account").value;
 
-  const data = await res.json();
+    const password =
+      document.getElementById("password").value;
 
-  const el = document.getElementById("loginResult");
+    const zizhangyi =
+      Number(
+        document.getElementById("zizhangyi").value
+      );
 
-  if(data.success){
+    const res = await fetch(
+      "/api/auth/login",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          account,
+          password,
+          zizhangyi
+        })
+      }
+    );
 
-    SESSION = data.cookies.SESSION;
-    acw_tc = data.cookies.acw_tc;
+    const data = await res.json();
 
-    el.innerHTML = `
-      <p class="success">Login berhasil</p>
-    `;
+    const el =
+      document.getElementById("loginResult");
 
-  }else{
+    if(data.success){
 
-    el.innerHTML = `
-      <p class="error">${data.message}</p>
-    `;
+      SESSION =
+        data.cookies?.SESSION || "";
 
-  }
+      acw_tc =
+        data.cookies?.acw_tc || "";
 
-}
+      el.innerHTML = `
+        <p class="success">
+          Login berhasil
+        </p>
+      `;
 
-async function loadTasks(){
+    }else{
 
-  const res = await fetch("/tasks/list",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      SESSION,
-      acw_tc
-    })
-  });
+      el.innerHTML = `
+        <p class="error">
+          ${data.message || "Login gagal"}
+        </p>
+      `;
 
-  const data = await res.json();
+    }
 
-  const container = document.getElementById("tasks");
+  }catch(err){
 
-  container.innerHTML = "";
-
-  if(!data.success){
-    container.innerHTML = `<p class="error">${data.message}</p>`;
-    return;
-  }
-
-  data.tasks.forEach(task => {
-
-    const div = document.createElement("div");
-
-    div.className = "card";
-
-    div.innerHTML = `
-      <h4>${task.name || "-"}</h4>
-
-      <p><b>Task ID:</b> ${task.taskId}</p>
-
-      <p><b>Address:</b> ${task.address || "-"}</p>
-
-      <p><b>Phone:</b> ${task.phone || "-"}</p>
-
-      <input type="file" accept="image/*" id="image-${task.taskId}">
-
-      <input type="file" accept=".amr,audio/*" id="audio-${task.taskId}">
-
-      <select id="feedback-${task.taskId}">
-        <option value="149">PTP dari user</option>
-        <option value="150">PTP dari keluarga/teman</option>
-        <option value="151">Titip pesan ke keluarga/teman</option>
-        <option value="154">Tidak ada di rumah</option>
-        <option value="157">Tidak ketemu user</option>
-        <option value="158">User tolak bayar</option>
-        <option value="166">Sementara tidak ada uang</option>
-        <option value="171">Pengaruh pandemi</option>
-        <option value="172">Mengajukan restrukturisasi hutang</option>
-        <option value="206">Nasabah tidak mengizinkan melakukan Recording</option>
-      </select>
-
-      <textarea id="remark-${task.taskId}" placeholder="Remark"></textarea>
-
-      <button onclick="submitFeedback(${task.taskId}, ${task.addressId})">
-        Submit Feedback
-      </button>
-
-      <div id="result-${task.taskId}"></div>
-    `;
-
-    container.appendChild(div);
-
-  });
-
-}
-
-async function submitFeedback(taskId, addressId){
-
-  const imageFile = document.getElementById(`image-${taskId}`).files[0];
-  const audioFile = document.getElementById(`audio-${taskId}`).files[0];
-
-  const feedbackId = Number(document.getElementById(`feedback-${taskId}`).value);
-
-  const remark = document.getElementById(`remark-${taskId}`).value;
-
-  const resultEl = document.getElementById(`result-${taskId}`);
-
-  if(!imageFile){
-    alert("Upload foto");
-    return;
-  }
-
-  if(!audioFile){
-    alert("Upload audio");
-    return;
-  }
-
-  const formData = new FormData();
-
-  formData.append("image", imageFile);
-  formData.append("audio", audioFile);
-
-  formData.append("taskId", taskId);
-  formData.append("addressId", addressId);
-
-  formData.append("feedbackId", feedbackId);
-
-  formData.append("remark", remark);
-
-  formData.append("SESSION", SESSION);
-  formData.append("acw_tc", acw_tc);
-
-  resultEl.innerHTML = "Processing...";
-
-  const res = await fetch("/feedback/submit",{
-    method:"POST",
-    body:formData
-  });
-
-  const data = await res.json();
-
-  if(data.success){
-
-    resultEl.innerHTML = `
-      <p class="success">
-        Feedback berhasil dikirim
+    document.getElementById(
+      "loginResult"
+    ).innerHTML = `
+      <p class="error">
+        ${err.message}
       </p>
     `;
 
-  }else{
+  }
 
-    resultEl.innerHTML = `
+}
+
+/*
+|--------------------------------------------------------------------------
+| LOAD TASKS
+|--------------------------------------------------------------------------
+*/
+
+async function loadTasks(){
+
+  try{
+
+    const res = await fetch(
+      "/api/tasks/list",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          SESSION,
+          acw_tc
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    const container =
+      document.getElementById("tasks");
+
+    container.innerHTML = "";
+
+    if(!data.success){
+
+      container.innerHTML = `
+        <p class="error">
+          ${data.message}
+        </p>
+      `;
+
+      return;
+    }
+
+    data.tasks.forEach(task => {
+
+      const div =
+        document.createElement("div");
+
+      div.className = "card";
+
+      div.innerHTML = `
+        <h4>
+          ${task.name || "-"}
+        </h4>
+
+        <p>
+          <b>Task ID:</b>
+          ${task.taskId}
+        </p>
+
+        <p>
+          <b>Address:</b>
+          ${task.address || "-"}
+        </p>
+
+        <p>
+          <b>Phone:</b>
+          ${task.phone || "-"}
+        </p>
+
+        <input
+          type="file"
+          accept="image/*"
+          id="image-${task.taskId}"
+        >
+
+        <input
+          type="file"
+          accept=".amr,audio/*"
+          id="audio-${task.taskId}"
+        >
+
+        <select id="feedback-${task.taskId}">
+          <option value="149">
+            PTP dari user
+          </option>
+
+          <option value="150">
+            PTP dari keluarga/teman
+          </option>
+
+          <option value="151">
+            Titip pesan ke keluarga/teman
+          </option>
+
+          <option value="154">
+            Tidak ada di rumah
+          </option>
+
+          <option value="157">
+            Tidak ketemu user
+          </option>
+
+          <option value="158">
+            User tolak bayar
+          </option>
+
+          <option value="166">
+            Sementara tidak ada uang
+          </option>
+
+          <option value="171">
+            Pengaruh pandemi
+          </option>
+
+          <option value="172">
+            Mengajukan restrukturisasi hutang
+          </option>
+
+          <option value="206">
+            Nasabah tidak mengizinkan recording
+          </option>
+        </select>
+
+        <textarea
+          id="remark-${task.taskId}"
+          placeholder="Remark"
+        ></textarea>
+
+        <button
+          onclick="submitFeedback(
+            ${task.taskId},
+            ${task.addressId}
+          )"
+        >
+          Submit Feedback
+        </button>
+
+        <div id="result-${task.taskId}"></div>
+      `;
+
+      container.appendChild(div);
+
+    });
+
+  }catch(err){
+
+    document.getElementById(
+      "tasks"
+    ).innerHTML = `
       <p class="error">
-        ${data.message}
+        ${err.message}
+      </p>
+    `;
+
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| SUBMIT FEEDBACK
+|--------------------------------------------------------------------------
+*/
+
+async function submitFeedback(
+  taskId,
+  addressId
+){
+
+  try{
+
+    const imageFile =
+      document.getElementById(
+        `image-${taskId}`
+      ).files[0];
+
+    const audioFile =
+      document.getElementById(
+        `audio-${taskId}`
+      ).files[0];
+
+    const feedbackId =
+      Number(
+        document.getElementById(
+          `feedback-${taskId}`
+        ).value
+      );
+
+    const remark =
+      document.getElementById(
+        `remark-${taskId}`
+      ).value;
+
+    const resultEl =
+      document.getElementById(
+        `result-${taskId}`
+      );
+
+    if(!imageFile){
+
+      alert("Upload foto");
+
+      return;
+    }
+
+    if(!audioFile){
+
+      alert("Upload audio");
+
+      return;
+    }
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "image",
+      imageFile
+    );
+
+    formData.append(
+      "audio",
+      audioFile
+    );
+
+    formData.append(
+      "taskId",
+      taskId
+    );
+
+    formData.append(
+      "addressId",
+      addressId
+    );
+
+    formData.append(
+      "feedbackId",
+      feedbackId
+    );
+
+    formData.append(
+      "remark",
+      remark
+    );
+
+    formData.append(
+      "SESSION",
+      SESSION
+    );
+
+    formData.append(
+      "acw_tc",
+      acw_tc
+    );
+
+    resultEl.innerHTML =
+      "Processing...";
+
+    const res = await fetch(
+      "/api/feedback/submit",
+      {
+        method:"POST",
+        body:formData
+      }
+    );
+
+    const data =
+      await res.json();
+
+    if(data.success){
+
+      resultEl.innerHTML = `
+        <p class="success">
+          Feedback berhasil dikirim
+        </p>
+      `;
+
+    }else{
+
+      resultEl.innerHTML = `
+        <p class="error">
+          ${data.message}
+        </p>
+      `;
+
+    }
+
+  }catch(err){
+
+    document.getElementById(
+      `result-${taskId}`
+    ).innerHTML = `
+      <p class="error">
+        ${err.message}
       </p>
     `;
 
