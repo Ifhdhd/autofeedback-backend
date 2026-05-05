@@ -1,6 +1,7 @@
+// routes/auth.js
+
 const express = require("express");
 const router = express.Router();
-const md5 = require("md5");
 
 const {
   login
@@ -12,102 +13,88 @@ const {
 |--------------------------------------------------------------------------
 */
 
-router.post(
-  "/login",
-  async (req, res) => {
+router.post("/login", async (req, res) => {
 
-    try {
+  try {
 
-      const {
-        account,
-        password,
-        zizhangyi
-      } = req.body;
+    /*
+    |--------------------------------------------------------------------------
+    | BODY
+    |--------------------------------------------------------------------------
+    */
 
-      /*
-      |--------------------------------------------------------------------------
-      | VALIDATION
-      |--------------------------------------------------------------------------
-      */
+    const {
 
-      if (
-        !account ||
-        !password
-      ) {
+      account,
 
-        return res.status(400)
-          .json({
-            success: false,
-            message:
-              "Account dan password wajib diisi"
-          });
+      password,
 
-      }
+      appVersion = "0"
 
-      /*
-      |--------------------------------------------------------------------------
-      | MD5 PASSWORD
-      |--------------------------------------------------------------------------
-      */
+    } = req.body;
 
-      const md5Password =
-        md5(password);
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDATION
+    |--------------------------------------------------------------------------
+    */
 
-      /*
-      |--------------------------------------------------------------------------
-      | LOGIN
-      |--------------------------------------------------------------------------
-      */
+    if (!account || !password) {
 
-      const result =
-        await login({
-          account,
-          pwd: md5Password,
-          appVersion: "1",
-          zizhangyi
-        });
+      return res.status(400).json({
 
-      /*
-      |--------------------------------------------------------------------------
-      | FAILED
-      |--------------------------------------------------------------------------
-      */
+        success: false,
 
-      if (!result.success) {
-
-        return res.status(401)
-          .json(result);
-
-      }
-
-      /*
-      |--------------------------------------------------------------------------
-      | SUCCESS
-      |--------------------------------------------------------------------------
-      */
-
-      return res.json({
-        success: true,
         message:
-          "Login berhasil",
-        data:
-          result.data,
-        cookies:
-          result.cookies
+          "account/password kosong"
+
       });
-
-    } catch (err) {
-
-      return res.status(500)
-        .json({
-          success: false,
-          message:
-            err.message
-        });
 
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN SERVICE
+    |--------------------------------------------------------------------------
+    */
+
+    const result =
+      await login({
+
+        account,
+
+        password,
+
+        appVersion
+
+      });
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    return res.json(result);
+
+  } catch (err) {
+
+    console.log(
+      "AUTH ROUTE ERROR:",
+      err.message
+    );
+
+    return res.status(500).json({
+
+      success: false,
+
+      message:
+        err.message
+
+    });
+
   }
-);
+
+});
 
 module.exports = router;
