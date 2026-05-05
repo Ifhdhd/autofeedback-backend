@@ -19,9 +19,9 @@ router.post(
     try {
 
       const {
-        username,
+        account,
         password,
-        type
+        zizhangyi
       } = req.body;
 
       /*
@@ -31,7 +31,7 @@ router.post(
       */
 
       if (
-        !username ||
+        !account ||
         !password
       ) {
 
@@ -39,7 +39,7 @@ router.post(
           .json({
             success: false,
             message:
-              "Username dan password wajib diisi"
+              "Account dan password wajib diisi"
           });
 
       }
@@ -61,9 +61,10 @@ router.post(
 
       const result =
         await login({
-          username,
-          password: md5Password,
-          type
+          account,
+          pwd: md5Password,
+          appVersion: "1",
+          zizhangyi
         });
 
       /*
@@ -90,7 +91,9 @@ router.post(
         message:
           "Login berhasil",
         data:
-          result.data
+          result.data,
+        cookies:
+          result.cookies
       });
 
     } catch (err) {
