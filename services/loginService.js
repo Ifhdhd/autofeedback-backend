@@ -1,5 +1,6 @@
+// services/loginService.js
+
 const axios = require("axios");
-const md5 = require("md5");
 
 function buildHeaders(cookie = "") {
 
@@ -45,9 +46,7 @@ async function login({
 
   password,
 
-  appVersion = "0",
-
-  zizhangyi = 0
+  appVersion = "0"
 
 }) {
 
@@ -55,11 +54,16 @@ async function login({
 
     /*
     |--------------------------------------------------------------------------
-    | PASSWORD MD5
+    | PASSWORD
     |--------------------------------------------------------------------------
+    |
+    | JANGAN md5 lagi
+    | karena frontend/app asli
+    | kemungkinan sudah md5
+    |
     */
 
-    const pwd = md5(password);
+    const pwd = password;
 
     /*
     |--------------------------------------------------------------------------
@@ -78,9 +82,7 @@ async function login({
 
           pwd,
 
-          appVersion,
-
-          zizhangyi
+          appVersion
 
         },
 
@@ -131,6 +133,12 @@ async function login({
       }
 
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUCCESS
+    |--------------------------------------------------------------------------
+    */
 
     return {
 
