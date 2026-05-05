@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Schedule Feedback</title>
+
+  <style>
+
+    body{
+      font-family: Arial, sans-serif;
+      background:#f4f4f4;
+      margin:0;
+      padding:20px;
+    }
+
+    .container{
+      max-width:900px;
+      margin:auto;
+      background:white;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1{
+      margin-top:0;
+    }
+
+    .card{
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:15px;
+      margin-top:15px;
+      background:#fafafa;
+    }
+
+    input,
+    textarea,
+    select{
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      border-radius:5px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:15px;
+      border:none;
+      border-radius:5px;
+      background:#007bff;
+      color:white;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    button:hover{
+      background:#0056b3;
+    }
+
+    .danger{
+      background:#dc3545;
+    }
+
+    .danger:hover{
+      background:#b52a37;
+    }
+
+    .success{
+      color:green;
+    }
+
+    .error{
+      color:red;
+    }
+
+  </style>
+
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Schedule Feedback</h1>
+
+  <div class="card">
+
+    <h3>Tambah Jadwal</h3>
+
+    <input type="text" id="taskId" placeholder="Task ID">
+
+    <input type="text" id="addressId" placeholder="Address ID">
+
+    <input type="datetime-local" id="scheduleTime">
+
+    <select id="feedbackId">
+
+      <option value="149">PTP dari user</option>
+
+      <option value="150">PTP dari keluarga/teman</option>
+
+      <option value="151">Titip pesan ke keluarga/teman</option>
+
+      <option value="154">Tidak ada di rumah</option>
+
+      <option value="157">Tidak ketemu user</option>
+
+      <option value="158">User tolak bayar</option>
+
+      <option value="166">Sementara tidak ada uang</option>
+
+      <option value="171">Pengaruh pandemi</option>
+
+      <option value="172">Mengajukan restrukturisasi hutang</option>
+
+      <option value="206">Nasabah tidak mengizinkan melakukan Recording</option>
+
+    </select>
+
+    <textarea id="remark" placeholder="Remark"></textarea>
+
+    <button onclick="addSchedule()">
+      Tambah Jadwal
+    </button>
+
+    <div id="addResult"></div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Daftar Jadwal</h3>
+
+    <button onclick="loadSchedules()">
+      Refresh Jadwal
+    </button>
+
+    <div id="scheduleList"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+async function addSchedule(){
+
+  const taskId = document.getElementById("taskId").value;
+  const addressId = document.getElementById("addressId").value;
+
+  const scheduleTime = document.getElementById("scheduleTime").value;
+
+  const feedbackId = document.getElementById("feedbackId").value;
+
+  const remark = document.getElementById("remark").value;
+
+  const resultEl = document.getElementById("addResult");
+
+  if(!taskId){
+    alert("Task ID wajib diisi");
+    return;
+  }
+
+  if(!addressId){
+    alert("Address ID wajib diisi");
+    return;
+  }
+
+  if(!scheduleTime){
+    alert("Schedule time wajib diisi");
+    return;
+  }
+
+  try{
+
+    const res = await fetch("/schedules/add",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        taskId,
+        addressId,
+        scheduleTime,
+        feedbackId,
+        remark
+      })
+
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+
+      resultEl.innerHTML = `
+        <p class="success">
+          Jadwal berhasil ditambahkan
+        </p>
+      `;
+
+      loadSchedules();
+
+    }else{
+
+      resultEl.innerHTML = `
+        <p class="error">
+          ${data.message}
+        </p>
+      `;
+
+    }
+
+  }catch(err){
+
+    resultEl.innerHTML = `
+      <p class="error">
+        ${err.message}
+      </p>
+    `;
+
+  }
+
+}
+
+async function loadSchedules(){
+
+  const res = await fetch("/schedules/list");
+
+  const data = await res.json();
+
+  const container = document.getElementById("scheduleList");
+
+  container.innerHTML = "";
+
+  if(!data.success){
+
+    container.innerHTML = `
+      <p class="error">${data.message}</p>
+    `;
+
+    return;
+
+  }
+
+  if(data.schedules.length === 0){
+
+    container.innerHTML = `
+      <p>Belum ada jadwal</p>
+    `;
+
+    return;
+
+  }
+
+  data.schedules.forEach((item,index)=>{
+
+    const div = document.createElement("div");
+
+    div.className = "card";
+
+    div.innerHTML = `
+
+      <p><b>Task ID:</b> ${item.taskId}</p>
+
+      <p><b>Address ID:</b> ${item.addressId}</p>
+
+      <p><b>Feedback ID:</b> ${item.feedbackId}</p>
+
+      <p><b>Schedule:</b> ${item.scheduleTime}</p>
+
+      <p><b>Remark:</b> ${item.remark || "-"}</p>
+
+      <button class="danger" onclick="deleteSchedule(${index})">
+        Hapus
+      </button>
+
+    `;
+
+    container.appendChild(div);
+
+  });
+
+}
+
+async function deleteSchedule(index){
+
+  if(!confirm("Hapus jadwal?")){
+    return;
+  }
+
+  const res = await fetch("/schedules/delete",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+      index
+    })
+
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+
+    loadSchedules();
+
+  }else{
+
+    alert(data.message);
+
+  }
+
+}
+
+loadSchedules();
+
+</script>
+
+</body>
+</html>

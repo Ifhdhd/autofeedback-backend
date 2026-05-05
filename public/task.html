@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Task Detail</title>
+
+  <style>
+
+    body{
+      font-family: Arial, sans-serif;
+      background:#f4f4f4;
+      margin:0;
+      padding:20px;
+    }
+
+    .container{
+      max-width:800px;
+      margin:auto;
+      background:white;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .card{
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:15px;
+      margin-bottom:15px;
+      background:#fafafa;
+    }
+
+    h1,h2,h3{
+      margin-top:0;
+    }
+
+    input,
+    textarea,
+    select{
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      border-radius:5px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button{
+      width:100%;
+      margin-top:15px;
+      padding:12px;
+      border:none;
+      border-radius:5px;
+      background:#007bff;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    button:hover{
+      background:#0056b3;
+    }
+
+    .success{
+      color:green;
+    }
+
+    .error{
+      color:red;
+    }
+
+    img{
+      width:100%;
+      border-radius:10px;
+      margin-top:10px;
+    }
+
+    audio{
+      width:100%;
+      margin-top:10px;
+    }
+
+  </style>
+
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Task Detail</h1>
+
+  <div id="taskInfo"></div>
+
+  <div class="card">
+
+    <h3>Upload Bukti</h3>
+
+    <label>Foto</label>
+    <input type="file" id="image" accept="image/*">
+
+    <img id="previewImage" style="display:none;">
+
+    <label>Audio Recording</label>
+    <input type="file" id="audio" accept=".amr,audio/*">
+
+    <audio id="previewAudio" controls style="display:none;"></audio>
+
+    <label>Feedback</label>
+
+    <select id="feedbackId">
+
+      <option value="149">PTP dari user</option>
+
+      <option value="150">PTP dari keluarga/teman</option>
+
+      <option value="151">Titip pesan ke keluarga/teman</option>
+
+      <option value="154">Tidak ada di rumah</option>
+
+      <option value="157">Tidak ketemu user</option>
+
+      <option value="158">User tolak bayar</option>
+
+      <option value="166">Sementara tidak ada uang</option>
+
+      <option value="171">Pengaruh pandemi</option>
+
+      <option value="172">Mengajukan restrukturisasi hutang</option>
+
+      <option value="206">Nasabah tidak mengizinkan melakukan Recording</option>
+
+    </select>
+
+    <textarea id="remark" placeholder="Remark"></textarea>
+
+    <button onclick="submitFeedback()">
+      Submit Feedback
+    </button>
+
+    <div id="result"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const taskId = params.get("taskId");
+const addressId = params.get("addressId");
+
+const SESSION = localStorage.getItem("SESSION");
+const acw_tc = localStorage.getItem("acw_tc");
+
+document.getElementById("image").addEventListener("change", e => {
+
+  const file = e.target.files[0];
+
+  if(!file) return;
+
+  const url = URL.createObjectURL(file);
+
+  const img = document.getElementById("previewImage");
+
+  img.src = url;
+  img.style.display = "block";
+
+});
+
+document.getElementById("audio").addEventListener("change", e => {
+
+  const file = e.target.files[0];
+
+  if(!file) return;
+
+  const url = URL.createObjectURL(file);
+
+  const audio = document.getElementById("previewAudio");
+
+  audio.src = url;
+  audio.style.display = "block";
+
+});
+
+async function loadTask(){
+
+  const res = await fetch("/tasks/detail",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+      taskId,
+      SESSION,
+      acw_tc
+    })
+
+  });
+
+  const data = await res.json();
+
+  const container = document.getElementById("taskInfo");
+
+  if(!data.success){
+
+    container.innerHTML = `
+      <p class="error">${data.message}</p>
+    `;
+
+    return;
+
+  }
+
+  const task = data.task;
+
+  container.innerHTML = `
+
+    <div class="card">
+
+      <h2>${task.name || "-"}</h2>
+
+      <p><b>Task ID:</b> ${task.taskId}</p>
+
+      <p><b>Address ID:</b> ${task.addressId}</p>
+
+      <p><b>Phone:</b> ${task.phone || "-"}</p>
+
+      <p><b>Address:</b> ${task.address || "-"}</p>
+
+      <p><b>Latitude:</b> ${task.latitude || "-"}</p>
+
+      <p><b>Longitude:</b> ${task.longitude || "-"}</p>
+
+    </div>
+
+  `;
+
+}
+
+async function submitFeedback(){
+
+  const image = document.getElementById("image").files[0];
+  const audio = document.getElementById("audio").files[0];
+
+  const feedbackId = document.getElementById("feedbackId").value;
+
+  const remark = document.getElementById("remark").value;
+
+  const resultEl = document.getElementById("result");
+
+  if(!image){
+
+    alert("Foto wajib upload");
+    return;
+
+  }
+
+  if(!audio){
+
+    alert("Audio wajib upload");
+    return;
+
+  }
+
+  const formData = new FormData();
+
+  formData.append("image", image);
+  formData.append("audio", audio);
+
+  formData.append("taskId", taskId);
+  formData.append("addressId", addressId);
+
+  formData.append("feedbackId", feedbackId);
+
+  formData.append("remark", remark);
+
+  formData.append("SESSION", SESSION);
+  formData.append("acw_tc", acw_tc);
+
+  resultEl.innerHTML = `
+    <p>Processing...</p>
+  `;
+
+  try{
+
+    const res = await fetch("/feedback/submit",{
+      method:"POST",
+      body:formData
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+
+      resultEl.innerHTML = `
+        <p class="success">
+          Feedback berhasil dikirim
+        </p>
+      `;
+
+    }else{
+
+      resultEl.innerHTML = `
+        <p class="error">
+          ${data.message}
+        </p>
+      `;
+
+    }
+
+  }catch(err){
+
+    resultEl.innerHTML = `
+      <p class="error">
+        ${err.message}
+      </p>
+    `;
+
+  }
+
+}
+
+loadTask();
+
+</script>
+
+</body>
+</html>
