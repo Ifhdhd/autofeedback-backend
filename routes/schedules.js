@@ -4,11 +4,10 @@ const path = require("path");
 
 const router = express.Router();
 
-const schedulesPath =
-  path.join(
-    __dirname,
-    "../schedules.json"
-  );
+const schedulesPath = path.join(
+  __dirname,
+  "../schedules.json"
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -27,11 +26,10 @@ function readSchedules() {
 
   }
 
-  const data =
-    fs.readFileSync(
-      schedulesPath,
-      "utf-8"
-    );
+  const data = fs.readFileSync(
+    schedulesPath,
+    "utf8"
+  );
 
   return JSON.parse(data);
 
@@ -72,21 +70,25 @@ router.get(
         readSchedules();
 
       return res.json({
+
         success: true,
+
         total:
           schedules.length,
+
         data:
           schedules
+
       });
 
     } catch (err) {
 
-      return res.status(500)
-        .json({
-          success: false,
-          message:
-            err.message
-        });
+      return res.status(500).json({
+
+        success: false,
+        message: err.message
+
+      });
 
     }
 
@@ -106,88 +108,108 @@ router.post(
     try {
 
       const {
-        username,
-        password,
-        zizhangyi,
-        hour,
-        minute,
-        enabled
+
+        taskId,
+        addressId,
+        feedbackId,
+        scheduleTime,
+
+        photoPath,
+        audioPath
+
       } = req.body;
 
       /*
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
       | VALIDATION
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
       */
 
-      if (
-        !username ||
-        !password
-      ) {
+      if (!taskId) {
 
-        return res.status(400)
-          .json({
-            success: false,
-            message:
-              "username dan password wajib"
-          });
+        return res.status(400).json({
+
+          success: false,
+          message: "taskId wajib"
+
+        });
+
+      }
+
+      if (!addressId) {
+
+        return res.status(400).json({
+
+          success: false,
+          message: "addressId wajib"
+
+        });
+
+      }
+
+      if (!scheduleTime) {
+
+        return res.status(400).json({
+
+          success: false,
+          message: "scheduleTime wajib"
+
+        });
 
       }
 
       /*
-      |------------------------------------------------------------------
-      | LOAD OLD DATA
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
+      | LOAD DATA
+      |--------------------------------------------------------------------------
       */
 
       const schedules =
         readSchedules();
 
       /*
-      |------------------------------------------------------------------
-      | CREATE NEW SCHEDULE
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
+      | NEW SCHEDULE
+      |--------------------------------------------------------------------------
       */
 
       const newSchedule = {
 
-        id:
-          Date.now(),
+        id: Date.now(),
 
-        username,
+        taskId,
+        addressId,
+        feedbackId,
 
-        password,
+        scheduleTime,
 
-        /*
-        | 1 = zizhangyi
-        | 0 = non zizhangyi
-        */
+        photoPath:
+          photoPath || null,
 
-        zizhangyi:
-          zizhangyi || 0,
+        audioPath:
+          audioPath || null,
 
-        hour:
-          hour || 8,
-
-        minute:
-          minute || 0,
-
-        enabled:
-          enabled !== false,
+        status: "pending",
 
         createdAt:
           Date.now()
 
       };
 
+      /*
+      |--------------------------------------------------------------------------
+      | PUSH
+      |--------------------------------------------------------------------------
+      */
+
       schedules.push(
         newSchedule
       );
 
       /*
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
       | SAVE
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
       */
 
       saveSchedules(
@@ -195,25 +217,26 @@ router.post(
       );
 
       /*
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
       | RESPONSE
-      |------------------------------------------------------------------
+      |--------------------------------------------------------------------------
       */
 
       return res.json({
+
         success: true,
-        data:
-          newSchedule
+        data: newSchedule
+
       });
 
     } catch (err) {
 
-      return res.status(500)
-        .json({
-          success: false,
-          message:
-            err.message
-        });
+      return res.status(500).json({
+
+        success: false,
+        message: err.message
+
+      });
 
     }
 
@@ -232,10 +255,9 @@ router.delete(
 
     try {
 
-      const id =
-        Number(
-          req.params.id
-        );
+      const id = Number(
+        req.params.id
+      );
 
       const schedules =
         readSchedules();
@@ -251,19 +273,22 @@ router.delete(
       );
 
       return res.json({
+
         success: true,
         message:
-          "Schedule dihapus"
+          "Schedule berhasil dihapus"
+
       });
 
     } catch (err) {
 
-      return res.status(500)
-        .json({
-          success: false,
-          message:
-            err.message
-        });
+      return res.status(500).json({
+
+        success: false,
+        message:
+          err.message
+
+      });
 
     }
 
@@ -272,20 +297,23 @@ router.delete(
 
 /*
 |--------------------------------------------------------------------------
-| ENABLE / DISABLE
+| UPDATE STATUS
 |--------------------------------------------------------------------------
 */
 
 router.patch(
-  "/schedules/:id/toggle",
+  "/schedules/:id/status",
   (req, res) => {
 
     try {
 
-      const id =
-        Number(
-          req.params.id
-        );
+      const id = Number(
+        req.params.id
+      );
+
+      const {
+        status
+      } = req.body;
 
       const schedules =
         readSchedules();
@@ -298,37 +326,43 @@ router.patch(
 
       if (index === -1) {
 
-        return res.status(404)
-          .json({
-            success: false,
-            message:
-              "Schedule tidak ditemukan"
-          });
+        return res.status(404).json({
+
+          success: false,
+          message:
+            "Schedule tidak ditemukan"
+
+        });
 
       }
 
-      schedules[index].enabled =
-        !schedules[index]
-          .enabled;
+      schedules[index].status =
+        status;
+
+      schedules[index].updatedAt =
+        Date.now();
 
       saveSchedules(
         schedules
       );
 
       return res.json({
+
         success: true,
         data:
           schedules[index]
+
       });
 
     } catch (err) {
 
-      return res.status(500)
-        .json({
-          success: false,
-          message:
-            err.message
-        });
+      return res.status(500).json({
+
+        success: false,
+        message:
+          err.message
+
+      });
 
     }
 
