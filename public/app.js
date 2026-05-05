@@ -1,209 +1,290 @@
-async function api(url, method = "GET", body = null){
+// public/app.js
 
-  const options = {
-    method,
-    headers:{}
-  };
+let SESSION = "";
+let acw_tc = "";
 
-  if(body instanceof FormData){
+async function login(){
 
-    options.body = body;
+  try{
 
-  }else if(body){
+    const account =
+      document.getElementById(
+        "account"
+      ).value;
 
-    options.headers["Content-Type"] = "application/json";
+    const password =
+      document.getElementById(
+        "password"
+      ).value;
 
-    options.body = JSON.stringify(body);
+    const zizhangyi =
+      Number(
+        document.getElementById(
+          "zizhangyi"
+        ).value
+      );
+
+    const res =
+      await fetch(
+        "/api/auth/login",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+            account,
+            password,
+            zizhangyi
+          })
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    const result =
+      document.getElementById(
+        "loginResult"
+      );
+
+    if(data.success){
+
+      SESSION =
+        data.cookies?.SESSION || "";
+
+      acw_tc =
+        data.cookies?.acw_tc || "";
+
+      result.innerHTML =
+        `<p class="success">
+          Login berhasil
+        </p>`;
+
+      document.getElementById(
+        "loginCard"
+      ).style.display = "none";
+
+      document.getElementById(
+        "dashboard"
+      ).style.display = "block";
+
+      loadTasks();
+
+    }else{
+
+      result.innerHTML =
+        `<p class="error">
+          ${data.message}
+        </p>`;
+
+    }
+
+  }catch(err){
+
+    document.getElementById(
+      "loginResult"
+    ).innerHTML =
+      `<p class="error">
+        ${err.message}
+      </p>`;
 
   }
-
-  const res = await fetch(url, options);
-
-  return await res.json();
-
-}
-
-function saveSession(cookies){
-
-  localStorage.setItem("SESSION", cookies.SESSION || "");
-  localStorage.setItem("acw_tc", cookies.acw_tc || "");
-
-}
-
-function getSession(){
-
-  return {
-    SESSION: localStorage.getItem("SESSION") || "",
-    acw_tc: localStorage.getItem("acw_tc") || ""
-  };
 
 }
 
 function logout(){
 
-  localStorage.removeItem("SESSION");
-  localStorage.removeItem("acw_tc");
+  SESSION = "";
+  acw_tc = "";
 
-  location.href = "/";
-
-}
-
-function showLoading(el, text = "Loading..."){
-
-  el.innerHTML = `
-    <p>${text}</p>
-  `;
+  location.reload();
 
 }
 
-function showError(el, text){
+async function loadTasks(){
 
-  el.innerHTML = `
-    <p style="color:red;">
-      ${text}
-    </p>
-  `;
+  try{
 
-}
+    const url =
+      `/api/tasks?SESSION=${encodeURIComponent(
+        SESSION
+      )}&acw_tc=${encodeURIComponent(
+        acw_tc
+      )}`;
 
-function showSuccess(el, text){
+    const res =
+      await fetch(url);
 
-  el.innerHTML = `
-    <p style="color:green;">
-      ${text}
-    </p>
-  `;
+    const data =
+      await res.json();
 
-}
+    const container =
+      document.getElementById(
+        "tasks"
+      );
 
-function previewImage(inputId, previewId){
+    container.innerHTML = "";
 
-  const input = document.getElementById(inputId);
+    if(!data.success){
 
-  input.addEventListener("change", e => {
+      container.innerHTML =
+        `<p class="error">
+          ${data.message}
+        </p>`;
 
-    const file = e.target.files[0];
+      return;
 
-    if(!file) return;
+    }
 
-    const url = URL.createObjectURL(file);
+    const tasks =
+      data.data || [];
 
-    const img = document.getElementById(previewId);
+    tasks.forEach(task => {
 
-    img.src = url;
-    img.style.display = "block";
+      const lat =
+        task.addressBo?.latitude || 0;
 
-  });
+      const lng =
+        task.addressBo?.longitude || 0;
 
-}
+      const dpd =
+        Number(task.dpd || 0);
 
-function previewAudio(inputId, previewId){
+      let badgeClass =
+        "green";
 
-  const input = document.getElementById(inputId);
+      if(dpd >= 90){
 
-  input.addEventListener("change", e => {
+        badgeClass = "red";
 
-    const file = e.target.files[0];
+      }else if(dpd >= 30){
 
-    if(!file) return;
+        badgeClass = "orange";
 
-    const url = URL.createObjectURL(file);
+      }
 
-    const audio = document.getElementById(previewId);
+      const div =
+        document.createElement(
+          "div"
+        );
 
-    audio.src = url;
-    audio.style.display = "block";
+      div.className =
+        "task-card";
 
-  });
+      div.innerHTML = `
 
-}
+        <div class="task-header">
 
-function formatDate(dateString){
+          <img
+            class="task-photo"
+            src="${
+              task.handHoldPhoto ||
+              "https://via.placeholder.com/100"
+            }"
+          >
 
-  const date = new Date(dateString);
+          <div>
 
-  return date.toLocaleString("id-ID",{
-    year:"numeric",
-    month:"2-digit",
-    day:"2-digit",
-    hour:"2-digit",
-    minute:"2-digit"
-  });
+            <div class="task-name">
+              ${task.userName || "-"}
+            </div>
 
-}
+            <div class="task-info">
+              Task ID:
+              ${task.id}
+            </div>
 
-function createFeedbackOptions(selected = ""){
+            <div class="task-info">
+              Phone:
+              ${task.phoneNumber || "-"}
+            </div>
 
-  const feedbacks = [
-    {id:149, name:"PTP dari user"},
-    {id:150, name:"PTP dari keluarga/teman"},
-    {id:151, name:"Titip pesan ke keluarga/teman"},
-    {id:154, name:"Tidak ada di rumah"},
-    {id:157, name:"Tidak ketemu user"},
-    {id:158, name:"User tolak bayar"},
-    {id:166, name:"Sementara tidak ada uang"},
-    {id:171, name:"Pengaruh pandemi"},
-    {id:172, name:"Mengajukan restrukturisasi hutang"},
-    {id:206, name:"Nasabah tidak mengizinkan melakukan Recording"}
-  ];
+            <div class="task-info">
+              Debt:
+              Rp ${task.formatDebt || 0}
+            </div>
 
-  return feedbacks.map(item => `
-    <option 
-      value="${item.id}"
-      ${selected == item.id ? "selected" : ""}
-    >
-      ${item.name}
-    </option>
-  `).join("");
+            <div class="task-info">
+              ${task.addressBo?.city || "-"},
+              ${task.addressBo?.province || "-"}
+            </div>
 
-}
+            <span class="badge ${badgeClass}">
+              DPD ${task.dpd || 0}
+            </span>
 
-function requireLogin(){
+          </div>
 
-  const session = localStorage.getItem("SESSION");
+        </div>
 
-  if(!session){
+        <div class="info-box">
 
-    alert("Session habis, login ulang");
+          <div class="info-item">
+            <b>Address ID:</b>
+            ${task.addressBo?.id || "-"}
+          </div>
 
-    location.href = "/";
+          <div class="info-item">
+            <b>Latitude:</b>
+            ${lat}
+          </div>
+
+          <div class="info-item">
+            <b>Longitude:</b>
+            ${lng}
+          </div>
+
+        </div>
+
+        <iframe
+          src="https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed">
+        </iframe>
+
+        <div class="action-group">
+
+          <button
+            class="btn-success"
+            onclick="openSchedule(
+              '${task.id}',
+              '${task.addressBo?.id || ""}',
+              '${lat}',
+              '${lng}'
+            )"
+          >
+            Schedule
+          </button>
+
+        </div>
+
+      `;
+
+      container.appendChild(div);
+
+    });
+
+  }catch(err){
+
+    console.log(err);
 
   }
 
 }
 
-function getFileName(file){
+function openSchedule(
+  taskId,
+  addressId,
+  lat,
+  lng
+){
 
-  if(!file) return "";
+  const url =
+    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
-  return file.name;
-
-}
-
-function randomString(length = 10){
-
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-  let result = "";
-
-  for(let i=0;i<length;i++){
-
-    result += chars.charAt(
-      Math.floor(Math.random() * chars.length)
-    );
-
-  }
-
-  return result;
+  window.location.href = url;
 
 }
-
-function sleep(ms){
-
-  return new Promise(resolve => {
-    setTimeout(resolve, ms);
-  });
-
-}
-
-console.log("app.js loaded");
