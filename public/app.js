@@ -3,7 +3,47 @@
 let SESSION = "";
 let acw_tc = "";
 
-let ALL_TASKS = [];
+let allTasks = [];
+
+/*
+|--------------------------------------------------------------------------
+| LOADER
+|--------------------------------------------------------------------------
+*/
+
+function showLoader(){
+
+  const loader =
+    document.getElementById(
+      "globalLoader"
+    );
+
+  if(loader){
+
+    loader.classList.remove(
+      "loader-hidden"
+    );
+
+  }
+
+}
+
+function hideLoader(){
+
+  const loader =
+    document.getElementById(
+      "globalLoader"
+    );
+
+  if(loader){
+
+    loader.classList.add(
+      "loader-hidden"
+    );
+
+  }
+
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +54,8 @@ let ALL_TASKS = [];
 async function login(){
 
   try{
+
+    showLoader();
 
     const account =
       document.getElementById(
@@ -68,12 +110,6 @@ async function login(){
       acw_tc =
         data.cookies?.acw_tc || "";
 
-      /*
-      |--------------------------------------------------------------------------
-      | SAVE SESSION
-      |--------------------------------------------------------------------------
-      */
-
       localStorage.setItem(
         "SESSION",
         SESSION
@@ -97,7 +133,7 @@ async function login(){
         "dashboard"
       ).style.display = "block";
 
-      loadTasks();
+      await loadTasks();
 
     }else{
 
@@ -108,9 +144,13 @@ async function login(){
 
     }
 
+    hideLoader();
+
   }catch(err){
 
     console.log(err);
+
+    hideLoader();
 
   }
 
@@ -122,7 +162,7 @@ async function login(){
 |--------------------------------------------------------------------------
 */
 
-window.onload = () => {
+window.onload = async () => {
 
   const savedSession =
     localStorage.getItem(
@@ -147,9 +187,15 @@ window.onload = () => {
       "dashboard"
     ).style.display = "block";
 
-    loadTasks();
+    await loadTasks();
 
   }
+
+  setTimeout(() => {
+
+    hideLoader();
+
+  },800);
 
 };
 
@@ -202,58 +248,13 @@ async function getAddressId(taskId){
       return "";
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | FIX RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-    const raw =
-      data.data;
-
-    /*
-    |--------------------------------------------------------------------------
-    | ARRAY
-    |--------------------------------------------------------------------------
-    */
-
-    if(Array.isArray(raw)){
-
-      const address =
-        raw[0];
-
-      return (
-
-        address?.addressId ||
-
-        address?.id ||
-
-        address?.addressBo?.id ||
-
-        ""
-
-      );
-
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBJECT
-    |--------------------------------------------------------------------------
-    */
+    const address =
+      data.data?.[0];
 
     return (
-
-      raw?.addressId ||
-
-      raw?.id ||
-
-      raw?.addressBo?.id ||
-
-      raw?.data?.addressId ||
-
+      address?.addressId ||
+      address?.id ||
       ""
-
     );
 
   }catch(err){
@@ -275,6 +276,8 @@ async function getAddressId(taskId){
 async function loadTasks(){
 
   try{
+
+    showLoader();
 
     const url =
       `/api/tasks?SESSION=${encodeURIComponent(
@@ -305,83 +308,46 @@ async function loadTasks(){
           ${JSON.stringify(data.message)}
         </p>`;
 
+      hideLoader();
+
       return;
 
     }
 
-    ALL_TASKS =
+    const tasks =
       data.data || [];
 
-    renderTasks(
-      ALL_TASKS
-    );
+    allTasks = [];
+
+    for(const task of tasks){
+
+      const taskId =
+        task.taskId ||
+        task.id;
+
+      const addressId =
+        await getAddressId(
+          taskId
+        );
+
+      task.realAddressId =
+        addressId;
+
+      allTasks.push(task);
+
+    }
+
+    renderTasks(allTasks);
+
+    hideLoader();
 
   }catch(err){
 
     console.log(err);
 
+    hideLoader();
+
   }
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| SEARCH TASKS
-|--------------------------------------------------------------------------
-*/
-
-function searchTasks(){
-
-  const keyword =
-    document.getElementById(
-      "searchTask"
-    ).value.toLowerCase();
-
-  const filtered =
-    ALL_TASKS.filter(task => {
-
-      const taskId =
-        String(
-          task.taskId ||
-          task.id ||
-          ""
-        ).toLowerCase();
-
-      const name =
-        String(
-          task.userName ||
-          ""
-        ).toLowerCase();
-
-      const phone =
-        String(
-          task.phoneNumber ||
-          ""
-        ).toLowerCase();
-
-      const city =
-        String(
-          task.addressBo?.city ||
-          ""
-        ).toLowerCase();
-
-      return (
-
-        taskId.includes(keyword) ||
-
-        name.includes(keyword) ||
-
-        phone.includes(keyword) ||
-
-        city.includes(keyword)
-
-      );
-
-    });
-
-  renderTasks(
-    filtered
-  );
 
 }
 
@@ -391,7 +357,7 @@ function searchTasks(){
 |--------------------------------------------------------------------------
 */
 
-async function renderTasks(tasks){
+function renderTasks(tasks){
 
   const container =
     document.getElementById(
@@ -400,89 +366,14 @@ async function renderTasks(tasks){
 
   container.innerHTML = "";
 
-  /*
-  |--------------------------------------------------------------------------
-  | TOTAL
-  |--------------------------------------------------------------------------
-  */
-
-  const taskCount =
-    document.getElementById(
-      "taskCount"
-    );
-
-  if(taskCount){
-
-    taskCount.innerHTML =
-      `Total Task:
-      ${tasks.length}`;
-
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | EMPTY
-  |--------------------------------------------------------------------------
-  */
-
-  if(tasks.length === 0){
-
-    container.innerHTML =
-      `
-        <div class="card">
-          Task tidak ditemukan
-        </div>
-      `;
-
-    return;
-
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | LOOP
-  |--------------------------------------------------------------------------
-  */
-
-  for(const task of tasks){
+  tasks.forEach(task => {
 
     const taskId =
       task.taskId ||
       task.id;
 
-    /*
-    |--------------------------------------------------------------------------
-    | ADDRESS ID REALTIME
-    |--------------------------------------------------------------------------
-    */
-
-    const realtimeAddressId =
-      await getAddressId(
-        taskId
-      );
-
-    /*
-    |--------------------------------------------------------------------------
-    | FALLBACK
-    |--------------------------------------------------------------------------
-    */
-
     const addressId =
-
-      realtimeAddressId ||
-
-      task.addressId ||
-
-      task.addressBo?.addressId ||
-
-      task.addressBo?.id ||
-
-      "";
-
-    console.log(
-      "FINAL ADDRESS ID:",
-      addressId
-    );
+      task.realAddressId || "-";
 
     const lat =
       task.addressBo?.latitude || 0;
@@ -538,23 +429,13 @@ async function renderTasks(tasks){
           </div>
 
           <div class="task-info">
+            Address ID:
+            ${addressId}
+          </div>
+
+          <div class="task-info">
             Phone:
             ${task.phoneNumber || "-"}
-          </div>
-
-          <div class="task-info">
-            Debt:
-            Rp ${task.formatDebt || 0}
-          </div>
-
-          <div class="task-info">
-            ${task.addressBo?.city || "-"},
-            ${task.addressBo?.province || "-"}
-          </div>
-
-          <div class="task-info">
-            Address ID:
-            ${addressId || "-"}
           </div>
 
           <span class="badge ${badgeClass}">
@@ -568,13 +449,13 @@ async function renderTasks(tasks){
       <div class="info-box">
 
         <div class="info-item">
-          <b>Latitude:</b>
-          ${lat}
+          Kota:
+          ${task.addressBo?.city || "-"}
         </div>
 
         <div class="info-item">
-          <b>Longitude:</b>
-          ${lng}
+          Provinsi:
+          ${task.addressBo?.province || "-"}
         </div>
 
       </div>
@@ -603,7 +484,54 @@ async function renderTasks(tasks){
 
     container.appendChild(div);
 
-  }
+  });
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| SEARCH TASKS
+|--------------------------------------------------------------------------
+*/
+
+function filterTasks(){
+
+  const keyword =
+    document.getElementById(
+      "searchInput"
+    ).value.toLowerCase();
+
+  const filtered =
+    allTasks.filter(task => {
+
+      const taskId =
+        String(
+          task.taskId ||
+          task.id ||
+          ""
+        ).toLowerCase();
+
+      const addressId =
+        String(
+          task.realAddressId ||
+          ""
+        ).toLowerCase();
+
+      const userName =
+        String(
+          task.userName ||
+          ""
+        ).toLowerCase();
+
+      return (
+        taskId.includes(keyword) ||
+        addressId.includes(keyword) ||
+        userName.includes(keyword)
+      );
+
+    });
+
+  renderTasks(filtered);
 
 }
 
@@ -620,20 +548,16 @@ function openSchedule(
   lng
 ){
 
-  /*
-  |--------------------------------------------------------------------------
-  | SAVE LAST PAGE
-  |--------------------------------------------------------------------------
-  */
+  showLoader();
 
-  sessionStorage.setItem(
-    "lastPage",
-    window.location.href
-  );
+  setTimeout(() => {
 
-  const url =
-    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
+    const url =
+      `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
-  window.location.href = url;
+    window.location.href =
+      url;
+
+  },600);
 
 }
