@@ -9,6 +9,7 @@
 }
 
 body{
+
   font-family:'Inter',sans-serif;
 
   background:
@@ -19,7 +20,9 @@ body{
     );
 
   color:white;
+
   min-height:100vh;
+
   padding:20px;
 }
 
@@ -28,15 +31,10 @@ body{
   margin:auto;
 }
 
-/* LOGIN */
-
-.login-card{
-  max-width:430px;
-  margin:60px auto;
-  padding:35px;
-}
+/* CARD */
 
 .card{
+
   background:
     rgba(255,255,255,0.06);
 
@@ -53,10 +51,42 @@ body{
     0 10px 40px rgba(0,0,0,.35);
 }
 
-.section-title{
-  font-size:28px;
+/* LOGIN */
+
+.login-card{
+  max-width:430px;
+  margin:60px auto;
+}
+
+/* TITLE */
+
+.title{
+
+  font-size:30px;
   font-weight:800;
-  margin-bottom:25px;
+
+  text-align:center;
+
+  margin-bottom:20px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #60a5fa,
+      #22d3ee
+    );
+
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.section-title{
+
+  font-size:24px;
+  font-weight:800;
+
+  margin-bottom:20px;
+
   text-align:center;
 
   background:
@@ -72,15 +102,32 @@ body{
 
 /* INPUT */
 
+.input-group{
+  margin-bottom:18px;
+}
+
+.input-group label{
+
+  display:block;
+
+  margin-bottom:8px;
+
+  color:#cbd5e1;
+
+  font-size:14px;
+}
+
 input,
 select,
 textarea{
 
   width:100%;
+
   border:none;
   outline:none;
 
-  margin-top:15px;
+  margin-top:5px;
+
   padding:16px 18px;
 
   border-radius:18px;
@@ -106,7 +153,8 @@ textarea:focus{
     rgba(255,255,255,0.12);
 }
 
-input::placeholder{
+input::placeholder,
+textarea::placeholder{
   color:#cbd5e1;
 }
 
@@ -118,11 +166,19 @@ option{
   color:black;
 }
 
+textarea{
+  min-height:120px;
+  resize:none;
+}
+
 /* BUTTON */
 
 button{
+
   width:100%;
+
   border:none;
+
   cursor:pointer;
 
   padding:15px;
@@ -138,7 +194,11 @@ button{
 }
 
 button:hover{
-  transform:translateY(-2px);
+
+  transform:
+    translateY(-2px);
+
+  opacity:.95;
 }
 
 .btn-primary{
@@ -177,13 +237,33 @@ button:hover{
   color:white;
 }
 
+.logout-btn{
+
+  width:auto;
+
+  padding:12px 20px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ef4444,
+      #dc2626
+    );
+
+  color:white;
+}
+
 /* NAVBAR */
 
 .navbar{
 
   display:flex;
+
   justify-content:space-between;
+
   align-items:center;
+
+  gap:15px;
 
   margin-bottom:25px;
 
@@ -201,6 +281,7 @@ button:hover{
 }
 
 .logo{
+
   font-size:26px;
   font-weight:800;
 
@@ -213,6 +294,39 @@ button:hover{
 
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
+}
+
+/* SEARCH */
+
+.search-box{
+
+  width:100%;
+
+  margin-top:20px;
+}
+
+.search-input{
+
+  width:100%;
+
+  padding:16px 20px;
+
+  border:none;
+
+  outline:none;
+
+  border-radius:18px;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  color:white;
+
+  font-size:15px;
+}
+
+.search-input::placeholder{
+  color:#94a3b8;
 }
 
 /* TASK GRID */
@@ -258,8 +372,12 @@ button:hover{
 }
 
 .task-header{
+
   display:flex;
+
   gap:16px;
+
+  align-items:flex-start;
 }
 
 .task-photo{
@@ -276,13 +394,17 @@ button:hover{
 }
 
 .task-name{
+
   font-size:19px;
   font-weight:800;
 }
 
 .task-info{
+
   margin-top:6px;
+
   font-size:14px;
+
   color:#cbd5e1;
 }
 
@@ -332,8 +454,11 @@ button:hover{
 }
 
 .info-item{
+
   margin-top:10px;
+
   font-size:14px;
+
   color:#e2e8f0;
 }
 
@@ -342,6 +467,7 @@ button:hover{
 iframe{
 
   width:100%;
+
   height:240px;
 
   border:none;
@@ -354,8 +480,11 @@ iframe{
 /* ACTION */
 
 .action-group{
+
   display:flex;
+
   gap:10px;
+
   margin-top:18px;
 }
 
@@ -363,20 +492,61 @@ iframe{
   flex:1;
 }
 
+/* PREVIEW */
+
+.preview-image{
+
+  width:100%;
+
+  border-radius:20px;
+
+  margin-top:18px;
+
+  object-fit:cover;
+}
+
+/* AUDIO */
+
+audio{
+
+  width:100%;
+
+  margin-top:20px;
+}
+
 /* ALERT */
 
 .success{
+
   color:#4ade80;
+
   margin-top:18px;
+
   text-align:center;
+
   font-weight:600;
 }
 
 .error{
+
   color:#f87171;
+
   margin-top:18px;
+
   text-align:center;
+
   font-weight:600;
+}
+
+.recording{
+
+  margin-top:15px;
+
+  text-align:center;
+
+  color:#22c55e;
+
+  font-weight:700;
 }
 
 /* MOBILE */
@@ -388,12 +558,28 @@ iframe{
   }
 
   .navbar{
+
     flex-direction:column;
+
     gap:15px;
   }
 
   .task-grid{
     grid-template-columns:1fr;
+  }
+
+  .task-header{
+    flex-direction:column;
+  }
+
+  .task-photo{
+
+    width:100%;
+    height:220px;
+  }
+
+  .action-group{
+    flex-direction:column;
   }
 
 }
