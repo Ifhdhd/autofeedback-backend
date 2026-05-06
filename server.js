@@ -97,18 +97,22 @@ app.get("/api/users", (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| START SCHEDULER
+| DEBUG RUN SCHEDULER
 |--------------------------------------------------------------------------
 */
 
-schedulerService.startScheduler();
+(async () => {
 
-/*
-|--------------------------------------------------------------------------
-| START SERVER
-|--------------------------------------------------------------------------
-*/
+  await schedulerService.runScheduler({
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+    cookie:
+      "SESSION=ISI_SESSION; acw_tc=ISI_ACWTC",
+
+    imageUrl:
+      "https://dummyimage.com/600x400/000/fff.jpg",
+
+    type: 0
+
+  });
+
+})();
