@@ -9,15 +9,9 @@ let acw_tc = "";
 |--------------------------------------------------------------------------
 */
 
-async function login(){
+async function login() {
 
-  try{
-
-    /*
-    |--------------------------------------------------------------------------
-    | FORM
-    |--------------------------------------------------------------------------
-    */
+  try {
 
     const account =
       document.getElementById(
@@ -29,45 +23,27 @@ async function login(){
         "password"
       ).value;
 
-    /*
-    |--------------------------------------------------------------------------
-    | APP VERSION
-    |--------------------------------------------------------------------------
-    */
-
     const appVersion =
       document.getElementById(
         "zizhangyi"
       ).value;
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOGIN API
-    |--------------------------------------------------------------------------
-    */
-
     const res =
       await fetch(
         "/api/auth/login",
         {
+          method: "POST",
 
-          method:"POST",
-
-          headers:{
+          headers: {
             "Content-Type":
               "application/json"
           },
 
-          body:JSON.stringify({
-
+          body: JSON.stringify({
             account,
-
             password,
-
             appVersion
-
           })
-
         }
       );
 
@@ -76,12 +52,6 @@ async function login(){
 
     console.log(data);
 
-    /*
-    |--------------------------------------------------------------------------
-    | RESULT ELEMENT
-    |--------------------------------------------------------------------------
-    */
-
     const result =
       document.getElementById(
         "loginResult"
@@ -89,11 +59,11 @@ async function login(){
 
     /*
     |--------------------------------------------------------------------------
-    | SUCCESS
+    | LOGIN SUCCESS
     |--------------------------------------------------------------------------
     */
 
-    if(data.success){
+    if (data.success) {
 
       SESSION =
         data.cookies?.SESSION || "";
@@ -102,57 +72,45 @@ async function login(){
         data.cookies?.acw_tc || "";
 
       result.innerHTML =
-        `<p class="success">
+        `
+        <p class="success">
           Login berhasil
-        </p>`;
-
-      /*
-      |--------------------------------------------------------------------------
-      | HIDE LOGIN
-      |--------------------------------------------------------------------------
-      */
+        </p>
+      `;
 
       document.getElementById(
         "loginCard"
       ).style.display = "none";
 
-      /*
-      |--------------------------------------------------------------------------
-      | SHOW DASHBOARD
-      |--------------------------------------------------------------------------
-      */
-
       document.getElementById(
         "dashboard"
       ).style.display = "block";
 
-      /*
-      |--------------------------------------------------------------------------
-      | LOAD TASKS
-      |--------------------------------------------------------------------------
-      */
-
       loadTasks();
 
-    }else{
+    } else {
 
       result.innerHTML =
-        `<p class="error">
+        `
+        <p class="error">
           ${JSON.stringify(data.message)}
-        </p>`;
+        </p>
+      `;
 
     }
 
-  }catch(err){
+  } catch (err) {
 
     console.log(err);
 
     document.getElementById(
       "loginResult"
     ).innerHTML =
-      `<p class="error">
+      `
+      <p class="error">
         ${err.message}
-      </p>`;
+      </p>
+    `;
 
   }
 
@@ -164,7 +122,7 @@ async function login(){
 |--------------------------------------------------------------------------
 */
 
-function logout(){
+function logout() {
 
   SESSION = "";
   acw_tc = "";
@@ -175,19 +133,93 @@ function logout(){
 
 /*
 |--------------------------------------------------------------------------
+| GET ADDRESS ID
+|--------------------------------------------------------------------------
+*/
+
+async function getAddressId(taskId) {
+
+  try {
+
+    const res =
+      await fetch(
+
+        `/api/tasks/address/${taskId}?SESSION=${encodeURIComponent(
+          SESSION
+        )}&acw_tc=${encodeURIComponent(
+          acw_tc
+        )}`
+
+      );
+
+    const data =
+      await res.json();
+
+    console.log(
+      "ADDRESS API:",
+      data
+    );
+
+    if (
+      !data.success
+    ) {
+      return "";
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ARRAY ADDRESS
+    |--------------------------------------------------------------------------
+    */
+
+    const addresses =
+      data.data?.data || [];
+
+    if (
+      !addresses.length
+    ) {
+      return "";
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADDRESS ID
+    |--------------------------------------------------------------------------
+    */
+
+    const address =
+      addresses[0];
+
+    return (
+      address.addressId ||
+
+      address.id ||
+
+      ""
+    );
+
+  } catch (err) {
+
+    console.log(
+      "GET ADDRESS ERROR:",
+      err
+    );
+
+    return "";
+
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
 | LOAD TASKS
 |--------------------------------------------------------------------------
 */
 
-async function loadTasks(){
+async function loadTasks() {
 
-  try{
-
-    /*
-    |--------------------------------------------------------------------------
-    | API URL
-    |--------------------------------------------------------------------------
-    */
+  try {
 
     const url =
       `/api/tasks?SESSION=${encodeURIComponent(
@@ -196,12 +228,6 @@ async function loadTasks(){
         acw_tc
       )}`;
 
-    /*
-    |--------------------------------------------------------------------------
-    | FETCH
-    |--------------------------------------------------------------------------
-    */
-
     const res =
       await fetch(url);
 
@@ -209,12 +235,6 @@ async function loadTasks(){
       await res.json();
 
     console.log(data);
-
-    /*
-    |--------------------------------------------------------------------------
-    | CONTAINER
-    |--------------------------------------------------------------------------
-    */
 
     const container =
       document.getElementById(
@@ -229,22 +249,18 @@ async function loadTasks(){
     |--------------------------------------------------------------------------
     */
 
-    if(!data.success){
+    if (!data.success) {
 
       container.innerHTML =
-        `<p class="error">
+        `
+        <p class="error">
           ${JSON.stringify(data.message)}
-        </p>`;
+        </p>
+      `;
 
       return;
 
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | TASKS
-    |--------------------------------------------------------------------------
-    */
 
     const tasks =
       data.data || [];
@@ -255,7 +271,39 @@ async function loadTasks(){
     |--------------------------------------------------------------------------
     */
 
-    tasks.forEach(task => {
+    for (const task of tasks) {
+
+      /*
+      |--------------------------------------------------------------------------
+      | TASK ID
+      |--------------------------------------------------------------------------
+      */
+
+      const taskId =
+
+        task.taskId ||
+
+        task.id ||
+
+        "";
+
+      /*
+      |--------------------------------------------------------------------------
+      | GET ADDRESS ID REAL
+      |--------------------------------------------------------------------------
+      */
+
+      const addressId =
+        await getAddressId(
+          taskId
+        );
+
+      console.log(
+        "TASK:",
+        taskId,
+        "ADDRESS:",
+        addressId
+      );
 
       /*
       |--------------------------------------------------------------------------
@@ -281,11 +329,11 @@ async function loadTasks(){
       let badgeClass =
         "green";
 
-      if(dpd >= 90){
+      if (dpd >= 90) {
 
         badgeClass = "red";
 
-      }else if(dpd >= 30){
+      } else if (dpd >= 30) {
 
         badgeClass = "orange";
 
@@ -331,7 +379,7 @@ async function loadTasks(){
 
             <div class="task-info">
               Task ID:
-              ${task.id || "-"}
+              ${taskId}
             </div>
 
             <div class="task-info">
@@ -361,7 +409,7 @@ async function loadTasks(){
 
           <div class="info-item">
             <b>Address ID:</b>
-            ${task.addressBo?.id || "-"}
+            ${addressId || "-"}
           </div>
 
           <div class="info-item">
@@ -385,8 +433,8 @@ async function loadTasks(){
           <button
             class="btn-success"
             onclick="openSchedule(
-  '${task.id}',
-  '${task.addressId || task.addressBo?.addressId || task.addressBo?.id || ""}',
+              '${taskId}',
+              '${addressId}',
               '${lat}',
               '${lng}'
             )"
@@ -398,26 +446,22 @@ async function loadTasks(){
 
       `;
 
-      /*
-      |--------------------------------------------------------------------------
-      | APPEND
-      |--------------------------------------------------------------------------
-      */
-
       container.appendChild(div);
 
-    });
+    }
 
-  }catch(err){
+  } catch (err) {
 
     console.log(err);
 
     document.getElementById(
       "tasks"
     ).innerHTML =
-      `<p class="error">
+      `
+      <p class="error">
         ${err.message}
-      </p>`;
+      </p>
+    `;
 
   }
 
@@ -434,7 +478,7 @@ function openSchedule(
   addressId,
   lat,
   lng
-){
+) {
 
   const url =
     `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
