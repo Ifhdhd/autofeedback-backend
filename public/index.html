@@ -2,120 +2,179 @@
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
-/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
-<title>Auto Feedback</title>
+  <title>Auto Feedback</title>
 
-<link
-  rel="stylesheet"
-  href="/style.css"
-/>
+  <link
+    rel="stylesheet"
+    href="/style.css"
+  />
 
 </head>
+
 <body>
 
-<div class="container">
+  <div class="container">
 
-  <!-- LOGIN -->
+    <!-- LOGIN -->
 
-  <div
-    class="card login-card"
-    id="loginCard"
-  >
-
-    <div class="section-title">
-      Auto Feedback Login
-    </div>
-
-    <input
-      type="text"
-      id="account"
-      placeholder="Username / Account"
+    <div
+      class="card login-card"
+      id="loginCard"
     >
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
-
-    <select id="zizhangyi">
-
-      <option value="1">
-        Zizhangyi
-      </option>
-
-      <option value="0">
-        Non Zizhangyi
-      </option>
-
-    </select>
-
-    <button
-      class="btn-primary"
-      onclick="login()"
-    >
-      Login
-    </button>
-
-    <div id="loginResult"></div>
-
-  </div>
-
-  <!-- DASHBOARD -->
-
-  <div
-    id="dashboard"
-    style="display:none;"
-  >
-
-    <div class="navbar">
-
-      <div class="logo">
+      <div class="title">
         Auto Feedback
       </div>
 
-      <button
-        class="btn-danger"
-        onclick="logout()"
-      >
-        Logout
-      </button>
+      <div class="input-group">
 
-    </div>
+        <label>
+          Account
+        </label>
 
-    <div class="card">
+        <input
+          type="text"
+          id="account"
+          placeholder="Masukkan account"
+        >
 
-      <div class="section-title">
-        Task List
+      </div>
+
+      <div class="input-group">
+
+        <label>
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="password"
+          placeholder="Masukkan password"
+        >
+
+      </div>
+
+      <div class="input-group">
+
+        <label>
+          Login Type
+        </label>
+
+        <select id="zizhangyi">
+
+          <option value="1">
+            Zizhangyi
+          </option>
+
+          <option value="0">
+            Non Zizhangyi
+          </option>
+
+        </select>
+
       </div>
 
       <button
         class="btn-primary"
-        onclick="loadTasks()"
+        onclick="login()"
       >
-        Refresh Tasks
+        Login
       </button>
 
-      <div
-        class="task-grid"
-        id="tasks"
-      ></div>
+      <div id="loginResult"></div>
+
+    </div>
+
+    <!-- DASHBOARD -->
+
+    <div
+      id="dashboard"
+      style="display:none;"
+    >
+
+      <!-- NAVBAR -->
+
+      <div class="card">
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <div class="title">
+            Auto Feedback Dashboard
+          </div>
+
+          <button
+            class="logout-btn"
+            onclick="logout()"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- TASK -->
+
+      <div class="card">
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:20px;
+            flex-wrap:wrap;
+            gap:10px;
+          "
+        >
+
+          <div class="title">
+            Task List
+          </div>
+
+          <button
+            class="btn-primary"
+            onclick="loadTasks()"
+            style="
+              width:auto;
+              padding:12px 20px;
+            "
+          >
+            Refresh Tasks
+          </button>
+
+        </div>
+
+        <div
+          id="tasks"
+        ></div>
+
+      </div>
 
     </div>
 
   </div>
 
-</div>
-
-<script src="/app.js"></script>
+  <script src="/app.js"></script>
 
 </body>
+
 </html>
