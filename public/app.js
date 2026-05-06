@@ -3,43 +3,7 @@
 let SESSION = "";
 let acw_tc = "";
 
-/*
-|--------------------------------------------------------------------------
-| LOADING SCREEN
-|--------------------------------------------------------------------------
-*/
-
-function showLoading(){
-
-  const loading =
-    document.getElementById(
-      "loadingScreen"
-    );
-
-  if(loading){
-
-    loading.style.display =
-      "flex";
-
-  }
-
-}
-
-function hideLoading(){
-
-  const loading =
-    document.getElementById(
-      "loadingScreen"
-    );
-
-  if(loading){
-
-    loading.style.display =
-      "none";
-
-  }
-
-}
+let allTasks = [];
 
 /*
 |--------------------------------------------------------------------------
@@ -50,8 +14,6 @@ function hideLoading(){
 async function login(){
 
   try{
-
-    showLoading();
 
     const account =
       document.getElementById(
@@ -135,13 +97,7 @@ async function login(){
         "dashboard"
       ).style.display = "block";
 
-      /*
-      |--------------------------------------------------------------------------
-      | LOAD TASK TANPA LOADING
-      |--------------------------------------------------------------------------
-      */
-
-      await loadTasks();
+      loadTasks();
 
     }else{
 
@@ -152,13 +108,9 @@ async function login(){
 
     }
 
-    hideLoading();
-
   }catch(err){
 
     console.log(err);
-
-    hideLoading();
 
   }
 
@@ -170,15 +122,7 @@ async function login(){
 |--------------------------------------------------------------------------
 */
 
-window.onload = async () => {
-
-  /*
-  |--------------------------------------------------------------------------
-  | HIDE LOADING PAS RELOAD
-  |--------------------------------------------------------------------------
-  */
-
-  hideLoading();
+window.onload = () => {
 
   const savedSession =
     localStorage.getItem(
@@ -203,13 +147,7 @@ window.onload = async () => {
       "dashboard"
     ).style.display = "block";
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOAD TASK TANPA LOADING
-    |--------------------------------------------------------------------------
-    */
-
-    await loadTasks();
+    loadTasks();
 
   }
 
@@ -285,45 +223,6 @@ async function getAddressId(taskId){
 
 /*
 |--------------------------------------------------------------------------
-| SEARCH TASK
-|--------------------------------------------------------------------------
-*/
-
-function searchTask(){
-
-  const input =
-    document.getElementById(
-      "searchInput"
-    ).value.toLowerCase();
-
-  const cards =
-    document.querySelectorAll(
-      ".task-card"
-    );
-
-  cards.forEach(card => {
-
-    const text =
-      card.innerText.toLowerCase();
-
-    if(text.includes(input)){
-
-      card.style.display =
-        "block";
-
-    }else{
-
-      card.style.display =
-        "none";
-
-    }
-
-  });
-
-}
-
-/*
-|--------------------------------------------------------------------------
 | LOAD TASKS
 |--------------------------------------------------------------------------
 */
@@ -368,39 +267,18 @@ async function loadTasks(){
     const tasks =
       data.data || [];
 
-    for(const task of tasks){
+    allTasks = [];
 
-      /*
-      |--------------------------------------------------------------------------
-      | TASK ID
-      |--------------------------------------------------------------------------
-      */
+    for(const task of tasks){
 
       const taskId =
         task.taskId ||
         task.id;
 
-      /*
-      |--------------------------------------------------------------------------
-      | ADDRESS ID
-      |--------------------------------------------------------------------------
-      */
-
       const addressId =
         await getAddressId(
           taskId
         );
-
-      console.log(
-        "ADDRESS ID:",
-        addressId
-      );
-
-      /*
-      |--------------------------------------------------------------------------
-      | LOCATION
-      |--------------------------------------------------------------------------
-      */
 
       const lat =
         task.addressBo?.latitude || 0;
@@ -408,120 +286,199 @@ async function loadTasks(){
       const lng =
         task.addressBo?.longitude || 0;
 
-      /*
-      |--------------------------------------------------------------------------
-      | DPD
-      |--------------------------------------------------------------------------
-      */
+      allTasks.push({
 
-      const dpd =
-        Number(task.dpd || 0);
+        ...task,
 
-      let badgeClass =
-        "green";
+        taskId,
+        addressId,
+        lat,
+        lng
 
-      if(dpd >= 90){
-
-        badgeClass = "red";
-
-      }else if(dpd >= 30){
-
-        badgeClass = "orange";
-
-      }
-
-      /*
-      |--------------------------------------------------------------------------
-      | CARD
-      |--------------------------------------------------------------------------
-      */
-
-      const div =
-        document.createElement(
-          "div"
-        );
-
-      div.className =
-        "task-card";
-
-      div.innerHTML = `
-
-        <div class="task-header">
-
-          <img
-            class="task-photo"
-            src="${
-              task.handHoldPhoto ||
-              "https://via.placeholder.com/100"
-            }"
-          >
-
-          <div>
-
-            <div class="task-name">
-              ${task.userName || "-"}
-
-            </div>
-
-            <div class="task-info">
-              Task ID:
-              ${taskId}
-            </div>
-
-            <div class="task-info">
-              Address ID:
-              ${addressId || "-"}
-            </div>
-
-            <div class="task-info">
-              Phone:
-              ${task.phoneNumber || "-"}
-            </div>
-
-            <div class="task-info">
-              Kota:
-              ${task.addressBo?.city || "-"}
-            </div>
-
-            <span class="badge ${badgeClass}">
-              DPD ${dpd}
-            </span>
-
-          </div>
-
-        </div>
-
-        <iframe
-          src="https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed">
-        </iframe>
-
-        <div class="action-group">
-
-          <button
-            class="btn-success"
-            onclick="openSchedule(
-              '${taskId}',
-              '${addressId}',
-              '${lat}',
-              '${lng}'
-            )"
-          >
-            Schedule
-          </button>
-
-        </div>
-
-      `;
-
-      container.appendChild(div);
+      });
 
     }
+
+    renderTasks(
+      allTasks
+    );
 
   }catch(err){
 
     console.log(err);
 
   }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| RENDER TASKS
+|--------------------------------------------------------------------------
+*/
+
+function renderTasks(tasks){
+
+  const container =
+    document.getElementById(
+      "tasks"
+    );
+
+  container.innerHTML = "";
+
+  if(tasks.length === 0){
+
+    container.innerHTML =
+      `
+      <p class="error">
+        Task tidak ditemukan
+      </p>
+      `;
+
+    return;
+
+  }
+
+  const grid =
+    document.createElement(
+      "div"
+    );
+
+  grid.className =
+    "task-grid";
+
+  tasks.forEach(task => {
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+    div.className =
+      "task-card";
+
+    div.innerHTML = `
+
+      <div class="task-header">
+
+        <img
+          class="task-photo"
+          src="${
+            task.handHoldPhoto ||
+            "https://via.placeholder.com/100"
+          }"
+        >
+
+        <div>
+
+          <div class="task-name">
+            ${task.userName || "-"}
+          </div>
+
+          <div class="task-info">
+            Task ID:
+            ${task.taskId}
+          </div>
+
+          <div class="task-info">
+            Address ID:
+            ${task.addressId || "-"}
+          </div>
+
+          <div class="task-info">
+            Phone:
+            ${task.phoneNumber || "-"}
+          </div>
+
+        </div>
+
+      </div>
+
+      <iframe
+        src="https://maps.google.com/maps?q=${task.lat},${task.lng}&z=15&output=embed">
+      </iframe>
+
+      <div class="action-group">
+
+        <button
+          class="btn-success"
+          onclick="openSchedule(
+            '${task.taskId}',
+            '${task.addressId}',
+            '${task.lat}',
+            '${task.lng}'
+          )"
+        >
+          Schedule
+        </button>
+
+      </div>
+
+    `;
+
+    grid.appendChild(div);
+
+  });
+
+  container.appendChild(grid);
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| SEARCH TASK
+|--------------------------------------------------------------------------
+*/
+
+function searchTask(){
+
+  const keyword =
+    document.getElementById(
+      "searchInput"
+    ).value.toLowerCase();
+
+  const filtered =
+    allTasks.filter(task => {
+
+      return (
+
+        String(
+          task.userName || ""
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        String(
+          task.taskId || ""
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        String(
+          task.phoneNumber || ""
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        String(
+          task.addressId || ""
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+      );
+
+    });
+
+  renderTasks(
+    filtered
+  );
 
 }
 
@@ -538,34 +495,14 @@ function openSchedule(
   lng
 ){
 
-  showLoading();
+  sessionStorage.setItem(
+    "lastPage",
+    "/"
+  );
 
   const url =
     `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
-  setTimeout(() => {
-
-    window.location.href = url;
-
-  }, 500);
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| OPEN SAVED SCHEDULE
-|--------------------------------------------------------------------------
-*/
-
-function openSchedules(){
-
-  showLoading();
-
-  setTimeout(() => {
-
-    window.location.href =
-      "/schedules.html";
-
-  }, 500);
+  window.location.href = url;
 
 }
