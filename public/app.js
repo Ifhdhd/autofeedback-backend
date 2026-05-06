@@ -452,7 +452,7 @@ async function renderTasks(tasks){
 
     /*
     |--------------------------------------------------------------------------
-    | ADDRESS ID
+    | ADDRESS ID REALTIME
     |--------------------------------------------------------------------------
     */
 
@@ -460,6 +460,12 @@ async function renderTasks(tasks){
       await getAddressId(
         taskId
       );
+
+    /*
+    |--------------------------------------------------------------------------
+    | FALLBACK
+    |--------------------------------------------------------------------------
+    */
 
     const addressId =
 
@@ -580,7 +586,13 @@ async function renderTasks(tasks){
       <div class="action-group">
 
         <button
-          class="btn-success schedule-btn"
+          class="btn-success"
+          onclick="openSchedule(
+            '${taskId}',
+            '${addressId}',
+            '${lat}',
+            '${lng}'
+          )"
         >
           Schedule
         </button>
@@ -588,31 +600,6 @@ async function renderTasks(tasks){
       </div>
 
     `;
-
-    /*
-    |--------------------------------------------------------------------------
-    | BUTTON CLICK
-    |--------------------------------------------------------------------------
-    */
-
-    const btn =
-      div.querySelector(
-        ".schedule-btn"
-      );
-
-    btn.addEventListener(
-      "click",
-      () => {
-
-        openSchedule(
-          taskId,
-          addressId,
-          lat,
-          lng
-        );
-
-      }
-    );
 
     container.appendChild(div);
 
@@ -645,7 +632,7 @@ function openSchedule(
   );
 
   const url =
-    `/schedule.html?taskId=${encodeURIComponent(taskId)}&addressId=${encodeURIComponent(addressId)}&lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`;
+    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
   window.location.href = url;
 
