@@ -32,7 +32,6 @@ async function login(){
       await fetch(
         "/api/auth/login",
         {
-
           method:"POST",
 
           headers:{
@@ -41,11 +40,9 @@ async function login(){
           },
 
           body:JSON.stringify({
-
             account,
             password,
             appVersion
-
           })
 
         }
@@ -135,7 +132,7 @@ window.onload = () => {
       "acw_tc"
     );
 
-  if(savedSession){
+  if(savedSession && savedAcw){
 
     SESSION = savedSession;
     acw_tc = savedAcw;
@@ -164,7 +161,61 @@ function logout(){
 
   localStorage.clear();
 
+  SESSION = "";
+  acw_tc = "";
+
   location.reload();
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| GET ADDRESS ID
+|--------------------------------------------------------------------------
+*/
+
+async function getAddressId(taskId){
+
+  try{
+
+    const url =
+      `/api/tasks/address?taskId=${taskId}&SESSION=${encodeURIComponent(
+        SESSION
+      )}&acw_tc=${encodeURIComponent(
+        acw_tc
+      )}`;
+
+    const res =
+      await fetch(url);
+
+    const data =
+      await res.json();
+
+    console.log(
+      "ADDRESS API:",
+      data
+    );
+
+    if(!data.success){
+      return "";
+    }
+
+    const address =
+      data.data?.[0];
+
+    return (
+      address?.addressId ||
+      address?.id ||
+      ""
+    );
+
+  }catch(err){
+
+    console.log(err);
+
+    return "";
+
+  }
 
 }
 
@@ -218,75 +269,35 @@ async function loadTasks(){
 
       /*
       |--------------------------------------------------------------------------
+      | FIX TASK ID
+      |--------------------------------------------------------------------------
+      */
+
+      const taskId =
+        task.taskId ||
+        task.id;
+
+      /*
+      |--------------------------------------------------------------------------
       | GET ADDRESS ID REALTIME
       |--------------------------------------------------------------------------
       */
 
-      let addressId = "";
-
-      try{
-
-        const addrRes =
-          await fetch(
-
-            `/api/tasks/address/${task.id}?SESSION=${encodeURIComponent(
-              SESSION
-            )}&acw_tc=${encodeURIComponent(
-              acw_tc
-            )}`
-
-          );
-
-        const addrData =
-          await addrRes.json();
-
-        console.log(
-          "ADDRESS:",
-          addrData
+      const addressId =
+        await getAddressId(
+          taskId
         );
 
-        addressId =
-
-          addrData?.data?.addressId ||
-
-          addrData?.data?.id ||
-
-          addrData?.data?.[0]?.addressId ||
-
-          addrData?.data?.[0]?.id ||
-
-          "";
-
-      }catch(err){
-
-        console.log(
-          "ADDRESS ERROR:",
-          err
-        );
-
-      }
+      console.log(
+        "ADDRESS ID:",
+        addressId
+      );
 
       const lat =
         task.addressBo?.latitude || 0;
 
       const lng =
         task.addressBo?.longitude || 0;
-
-      const dpd =
-        Number(task.dpd || 0);
-
-      let badgeClass =
-        "green";
-
-      if(dpd >= 90){
-
-        badgeClass = "red";
-
-      }else if(dpd >= 30){
-
-        badgeClass = "orange";
-
-      }
 
       const div =
         document.createElement(
@@ -316,47 +327,14 @@ async function loadTasks(){
 
             <div class="task-info">
               Task ID:
-              ${task.id || "-"}
+              ${taskId}
             </div>
 
             <div class="task-info">
-              Phone:
-              ${task.phoneNumber || "-"}
+              Address ID:
+              ${addressId || "-"}
             </div>
 
-            <div class="task-info">
-              Debt:
-              Rp ${task.formatDebt || 0}
-            </div>
-
-            <div class="task-info">
-              ${task.addressBo?.city || "-"},
-              ${task.addressBo?.province || "-"}
-            </div>
-
-            <span class="badge ${badgeClass}">
-              DPD ${task.dpd || 0}
-            </span>
-
-          </div>
-
-        </div>
-
-        <div class="info-box">
-
-          <div class="info-item">
-            <b>Address ID:</b>
-            ${addressId || "-"}
-          </div>
-
-          <div class="info-item">
-            <b>Latitude:</b>
-            ${lat}
-          </div>
-
-          <div class="info-item">
-            <b>Longitude:</b>
-            ${lng}
           </div>
 
         </div>
@@ -370,7 +348,7 @@ async function loadTasks(){
           <button
             class="btn-success"
             onclick="openSchedule(
-              '${task.id}',
+              '${taskId}',
               '${addressId}',
               '${lat}',
               '${lng}'
@@ -408,39 +386,9 @@ function openSchedule(
   lng
 ){
 
-  /*
-  |--------------------------------------------------------------------------
-  | SAVE SESSION
-  |--------------------------------------------------------------------------
-  */
+  const url =
+    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
-  localStorage.setItem(
-    "scheduleTaskId",
-    taskId
-  );
-
-  localStorage.setItem(
-    "scheduleAddressId",
-    addressId
-  );
-
-  localStorage.setItem(
-    "scheduleLat",
-    lat
-  );
-
-  localStorage.setItem(
-    "scheduleLng",
-    lng
-  );
-
-  /*
-  |--------------------------------------------------------------------------
-  | REDIRECT
-  |--------------------------------------------------------------------------
-  */
-
-  window.location.href =
-    "/schedule.html";
+  window.location.href = url;
 
 }
