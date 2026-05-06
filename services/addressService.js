@@ -10,6 +10,7 @@ const BASE_URL = "https://ez-co-app.tin.group";
 */
 
 async function queryTaskAddress(cookie, taskId) {
+
   try {
 
     const response = await axios.get(
@@ -19,7 +20,8 @@ async function queryTaskAddress(cookie, taskId) {
       }
     );
 
-    const addresses = response.data?.data || [];
+    const addresses =
+      response.data?.data || [];
 
     return {
       success: true,
@@ -37,6 +39,7 @@ async function queryTaskAddress(cookie, taskId) {
     };
 
   }
+
 }
 
 /*
@@ -45,25 +48,34 @@ async function queryTaskAddress(cookie, taskId) {
 |--------------------------------------------------------------------------
 */
 
-async function getPrimaryAddress(cookie, taskId) {
+async function getPrimaryAddress(
+  cookie,
+  taskId
+) {
+
   try {
 
-    const result = await queryTaskAddress(
-      cookie,
-      taskId
-    );
+    const result =
+      await queryTaskAddress(
+        cookie,
+        taskId
+      );
 
     if (!result.success) {
       return result;
     }
 
-    const address = result.data[0];
+    const address =
+      result.data[0];
 
     if (!address) {
+
       return {
         success: false,
-        message: "Address not found"
+        message:
+          "Address not found"
       };
+
     }
 
     return {
@@ -79,24 +91,30 @@ async function getPrimaryAddress(cookie, taskId) {
     };
 
   }
+
 }
 
 /*
 |--------------------------------------------------------------------------
-| FORMAT ADDRESS
+| BUILD ADDRESS STRING
 |--------------------------------------------------------------------------
 */
 
-function buildAddressString(address) {
+function buildAddressString(
+  address
+) {
 
-  return `
-    ${address.street || ""}
-    ${address.district || ""}
-    ${address.city || ""}
-    ${address.province || ""}
-  `
-    .replace(/\s+/g, " ")
-    .trim();
+  return [
+
+    address.street,
+    address.district,
+    address.city,
+    address.province
+
+  ]
+    .filter(Boolean)
+    .join(" ");
+
 }
 
 /*
@@ -105,48 +123,94 @@ function buildAddressString(address) {
 |--------------------------------------------------------------------------
 */
 
-async function getAddressDetail(cookie, taskId) {
+async function getAddressDetail(
+  cookie,
+  taskId
+) {
+
   try {
 
-    const result = await getPrimaryAddress(
-      cookie,
-      taskId
-    );
+    const result =
+      await getPrimaryAddress(
+        cookie,
+        taskId
+      );
 
     if (!result.success) {
       return result;
     }
 
-    const address = result.data;
+    const address =
+      result.data;
 
     return {
+
       success: true,
+
       data: {
-        addressId: Number(address.addressId),
-        uid: address.uid,
-        province: address.province,
-        city: address.city,
-        district: address.district,
-        street: address.street,
-        roomNumber: address.roomNumber,
-        fullAddress: buildAddressString(address),
-        raw: address
+
+        /*
+        |--------------------------------------------------------------------------
+        | PENTING
+        |--------------------------------------------------------------------------
+        */
+
+        addressId:
+          address.addressId,
+
+        uid:
+          address.uid,
+
+        province:
+          address.province,
+
+        city:
+          address.city,
+
+        district:
+          address.district,
+
+        street:
+          address.street,
+
+        roomNumber:
+          address.roomNumber,
+
+        latitude:
+          address.latitude,
+
+        longitude:
+          address.longitude,
+
+        fullAddress:
+          buildAddressString(
+            address
+          ),
+
+        raw:
+          address
+
       }
+
     };
 
   } catch (err) {
 
     return {
       success: false,
-      message: err.message
+      message:
+        err.message
     };
 
   }
+
 }
 
 module.exports = {
+
   queryTaskAddress,
   getPrimaryAddress,
   getAddressDetail,
   buildAddressString
+
 };
