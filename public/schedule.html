@@ -20,6 +20,26 @@
 
 <script src="/recorder.js"></script>
 
+<style>
+
+.schedule-list{
+  margin-top:20px;
+}
+
+.schedule-item{
+  background:#2d3748;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  color:white;
+}
+
+.schedule-item button{
+  margin-top:10px;
+}
+
+</style>
+
 </head>
 <body>
 
@@ -33,7 +53,7 @@
 
     <button
       class="btn-primary"
-      onclick="history.back()"
+      onclick="goBack()"
     >
       Back
     </button>
@@ -84,108 +104,103 @@
 
     <select id="feedbackId">
 
-  <!-- PTP -->
-  <option value="149">
-    PTP dari user
-  </option>
+      <option value="149">
+        PTP dari user
+      </option>
 
-  <option value="150">
-    PTP dari keluarga / teman
-  </option>
+      <option value="150">
+        PTP dari keluarga / teman
+      </option>
 
-  <option value="151">
-    Titip pesan ke keluarga / teman
-  </option>
+      <option value="151">
+        Titip pesan ke keluarga / teman
+      </option>
 
-  <!-- Tidak ketemu -->
-  <option value="154">
-    Tidak ada di rumah
-  </option>
+      <option value="154">
+        Tidak ada di rumah
+      </option>
 
-  <option value="157">
-    Tidak ketemu user
-  </option>
+      <option value="157">
+        Tidak ketemu user
+      </option>
 
-  <!-- Penolakan -->
-  <option value="158">
-    User tolak bayar
-  </option>
+      <option value="158">
+        User tolak bayar
+      </option>
 
-  <option value="206">
-    Nasabah tidak mengizinkan recording
-  </option>
+      <option value="206">
+        Nasabah tidak mengizinkan recording
+      </option>
 
-  <!-- Finansial -->
-  <option value="166">
-    Sementara tidak ada uang
-  </option>
+      <option value="166">
+        Sementara tidak ada uang
+      </option>
 
-  <option value="171">
-    Pengaruh pandemi
-  </option>
+      <option value="171">
+        Pengaruh pandemi
+      </option>
 
-  <option value="172">
-    Mengajukan restrukturisasi hutang
-  </option>
+      <option value="172">
+        Mengajukan restrukturisasi hutang
+      </option>
 
-  <!-- Tambahan -->
-  <option value="173">
-    Janji bayar minggu ini
-  </option>
+      <option value="173">
+        Janji bayar minggu ini
+      </option>
 
-  <option value="174">
-    Janji bayar akhir bulan
-  </option>
+      <option value="174">
+        Janji bayar akhir bulan
+      </option>
 
-  <option value="175">
-    Menunggu gajian
-  </option>
+      <option value="175">
+        Menunggu gajian
+      </option>
 
-  <option value="176">
-    Menunggu transfer keluarga
-  </option>
+      <option value="176">
+        Menunggu transfer keluarga
+      </option>
 
-  <option value="177">
-    Sedang di luar kota
-  </option>
+      <option value="177">
+        Sedang di luar kota
+      </option>
 
-  <option value="178">
-    Nomor tidak aktif
-  </option>
+      <option value="178">
+        Nomor tidak aktif
+      </option>
 
-  <option value="179">
-    Rumah kosong
-  </option>
+      <option value="179">
+        Rumah kosong
+      </option>
 
-  <option value="180">
-    Pindah alamat
-  </option>
+      <option value="180">
+        Pindah alamat
+      </option>
 
-  <option value="181">
-    User sakit
-  </option>
+      <option value="181">
+        User sakit
+      </option>
 
-  <option value="182">
-    User meninggal dunia
-  </option>
+      <option value="182">
+        User meninggal dunia
+      </option>
 
-  <option value="183">
-    Tidak mau ditemui
-  </option>
+      <option value="183">
+        Tidak mau ditemui
+      </option>
 
-  <option value="184">
-    Menunggu hasil penjualan aset
-  </option>
+      <option value="184">
+        Menunggu hasil penjualan aset
+      </option>
 
-  <option value="185">
-    Menunggu pencairan dana
-  </option>
+      <option value="185">
+        Menunggu pencairan dana
+      </option>
 
-  <option value="186">
-    Janji datang ke kantor
-  </option>
+      <option value="186">
+        Janji datang ke kantor
+      </option>
 
-</select>
+    </select>
 
     <textarea
       id="remark"
@@ -233,7 +248,20 @@
       Save Schedule
     </button>
 
+    <button
+      class="btn-primary"
+      onclick="loadSchedules()"
+      style="margin-top:10px;"
+    >
+      Lihat Schedule Tersimpan
+    </button>
+
     <div id="result"></div>
+
+    <div
+      id="scheduleList"
+      class="schedule-list"
+    ></div>
 
   </div>
 
@@ -258,28 +286,50 @@ const lat =
 const lng =
   params.get("lng");
 
+/*
+|--------------------------------------------------------------------------
+| SHOW DATA
+|--------------------------------------------------------------------------
+*/
+
 document.getElementById(
   "showTaskId"
-).innerText = taskId;
+).innerText = taskId || "-";
 
 document.getElementById(
   "showAddressId"
-).innerText = addressId;
+).innerText = addressId || "-";
 
 document.getElementById(
   "showLat"
-).innerText = lat;
+).innerText = lat || "-";
 
 document.getElementById(
   "showLng"
-).innerText = lng;
+).innerText = lng || "-";
 
 document.getElementById(
   "maps"
 ).src =
   `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
 
-let recordedBlob = null;
+/*
+|--------------------------------------------------------------------------
+| BACK FIX
+|--------------------------------------------------------------------------
+*/
+
+function goBack(){
+
+  window.location.href = "/";
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| PHOTO PREVIEW
+|--------------------------------------------------------------------------
+*/
 
 document.getElementById(
   "photoFile"
@@ -303,41 +353,310 @@ document.getElementById(
 
 };
 
+/*
+|--------------------------------------------------------------------------
+| RECORD
+|--------------------------------------------------------------------------
+*/
+
+let recordedBlob = null;
+
 async function stopRecordingCustom(){
 
-  const result =
-    await recorder.stop();
+  try{
 
-  recordedBlob =
-    result.blob;
+    const result =
+      await recorder.stop();
 
-  const audio =
+    recordedBlob =
+      result.blob;
+
+    const audio =
+      document.getElementById(
+        "previewAudio"
+      );
+
+    audio.src =
+      result.url;
+
+    audio.style.display =
+      "block";
+
     document.getElementById(
-      "previewAudio"
-    );
+      "recordStatus"
+    ).innerHTML =
+      `<div class="recording">
+        Recording selesai
+      </div>`;
 
-  audio.src =
-    result.url;
+  }catch(err){
 
-  audio.style.display =
-    "block";
+    console.log(err);
 
-  document.getElementById(
-    "recordStatus"
-  ).innerHTML =
-    `<div class="recording">
-      Recording selesai
-    </div>`;
+  }
 
 }
+
+/*
+|--------------------------------------------------------------------------
+| SAVE SCHEDULE
+|--------------------------------------------------------------------------
+*/
 
 async function saveSchedule(){
 
-  alert(
-    "Schedule berhasil dibuat"
-  );
+  try{
+
+    const feedbackId =
+      document.getElementById(
+        "feedbackId"
+      ).value;
+
+    const scheduleTime =
+      document.getElementById(
+        "scheduleTime"
+      ).value;
+
+    const remark =
+      document.getElementById(
+        "remark"
+      ).value;
+
+    if(!scheduleTime){
+
+      alert(
+        "Schedule time wajib"
+      );
+
+      return;
+
+    }
+
+    const body = {
+
+      taskId,
+      addressId,
+
+      feedbackId,
+
+      scheduleTime,
+
+      remark,
+
+      lat,
+      lng
+
+    };
+
+    const res =
+      await fetch(
+        "/api/schedules/schedules/add",
+        {
+
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(body)
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    console.log(data);
+
+    if(data.success){
+
+      document.getElementById(
+        "result"
+      ).innerHTML =
+        `<p class="success">
+          Schedule berhasil dibuat
+        </p>`;
+
+      loadSchedules();
+
+    }else{
+
+      document.getElementById(
+        "result"
+      ).innerHTML =
+        `<p class="error">
+          ${JSON.stringify(data.message)}
+        </p>`;
+
+    }
+
+  }catch(err){
+
+    console.log(err);
+
+  }
 
 }
+
+/*
+|--------------------------------------------------------------------------
+| LOAD SCHEDULES
+|--------------------------------------------------------------------------
+*/
+
+async function loadSchedules(){
+
+  try{
+
+    const res =
+      await fetch(
+        "/api/schedules/schedules"
+      );
+
+    const data =
+      await res.json();
+
+    console.log(data);
+
+    const container =
+      document.getElementById(
+        "scheduleList"
+      );
+
+    container.innerHTML = "";
+
+    if(!data.success){
+
+      container.innerHTML =
+        `<p class="error">
+          gagal load schedule
+        </p>`;
+
+      return;
+
+    }
+
+    if(data.data.length === 0){
+
+      container.innerHTML =
+        `<p>
+          belum ada schedule
+        </p>`;
+
+      return;
+
+    }
+
+    data.data.forEach(item => {
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "schedule-item";
+
+      div.innerHTML = `
+
+        <div>
+          <b>Task ID:</b>
+          ${item.taskId}
+        </div>
+
+        <div>
+          <b>Address ID:</b>
+          ${item.addressId}
+        </div>
+
+        <div>
+          <b>Feedback ID:</b>
+          ${item.feedbackId}
+        </div>
+
+        <div>
+          <b>Schedule:</b>
+          ${item.scheduleTime}
+        </div>
+
+        <div>
+          <b>Status:</b>
+          ${item.status}
+        </div>
+
+        <button
+          class="btn-danger"
+          onclick="deleteSchedule(${item.id})"
+        >
+          Hapus
+        </button>
+
+      `;
+
+      container.appendChild(
+        div
+      );
+
+    });
+
+  }catch(err){
+
+    console.log(err);
+
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| DELETE SCHEDULE
+|--------------------------------------------------------------------------
+*/
+
+async function deleteSchedule(id){
+
+  try{
+
+    const yes =
+      confirm(
+        "Hapus schedule?"
+      );
+
+    if(!yes) return;
+
+    const res =
+      await fetch(
+        `/api/schedules/schedules/${id}`,
+        {
+          method:"DELETE"
+        }
+      );
+
+    const data =
+      await res.json();
+
+    console.log(data);
+
+    loadSchedules();
+
+  }catch(err){
+
+    console.log(err);
+
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| AUTO LOAD
+|--------------------------------------------------------------------------
+*/
+
+loadSchedules();
 
 </script>
 
