@@ -1,16 +1,28 @@
+// server.js
+
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
 
-const authRoutes = require("./routes/auth");
-const taskRoutes = require("./routes/tasks");
-const feedbackRoutes = require("./routes/feedback");
-const scheduleRoutes = require("./routes/schedules");
+const authRoutes =
+  require("./routes/auth");
 
-const schedulerService = require("./services/schedulerService");
+const taskRoutes =
+  require("./routes/tasks");
+
+const feedbackRoutes =
+  require("./routes/feedback");
+
+const scheduleRoutes =
+  require("./routes/schedules");
+
+const schedulerService =
+  require("./services/schedulerService");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+const PORT =
+  process.env.PORT || 3000;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,18 +31,32 @@ const PORT = process.env.PORT || 3000;
 */
 
 const folders = [
+
   "uploads",
+
   "uploads/photos",
+
   "uploads/audio",
+
   "temp",
+
   "logs",
+
   "public"
+
 ];
 
 folders.forEach((folder) => {
+
   if (!fs.existsSync(folder)) {
-    fs.mkdirSync(folder, { recursive: true });
+
+    fs.mkdirSync(
+      folder,
+      { recursive: true }
+    );
+
   }
+
 });
 
 /*
@@ -39,11 +65,37 @@ folders.forEach((folder) => {
 |--------------------------------------------------------------------------
 */
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.json({
+    limit: "50mb"
+  })
+);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+);
+
+app.use(
+  "/uploads",
+
+  express.static(
+    path.join(
+      __dirname,
+      "uploads"
+    )
+  )
+);
+
+app.use(
+  express.static(
+    path.join(
+      __dirname,
+      "public"
+    )
+  )
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -51,10 +103,25 @@ app.use(express.static(path.join(__dirname, "public")));
 |--------------------------------------------------------------------------
 */
 
-app.use("/api/auth", authRoutes);
-app.use("/api/tasks", taskRoutes);
-app.use("/api/feedback", feedbackRoutes);
-app.use("/api/schedules", scheduleRoutes);
+app.use(
+  "/api/auth",
+  authRoutes
+);
+
+app.use(
+  "/api/tasks",
+  taskRoutes
+);
+
+app.use(
+  "/api/feedback",
+  feedbackRoutes
+);
+
+app.use(
+  "/api/schedules",
+  scheduleRoutes
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -63,11 +130,19 @@ app.use("/api/schedules", scheduleRoutes);
 */
 
 app.get("/", (req, res) => {
+
   res.json({
+
     success: true,
-    message: "Auto Feedback Backend Running 🚀",
-    time: new Date(),
+
+    message:
+      "Auto Feedback Backend Running 🚀",
+
+    time:
+      new Date()
+
   });
+
 });
 
 /*
@@ -76,24 +151,50 @@ app.get("/", (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-app.get("/api/users", (req, res) => {
-  try {
-    const users = JSON.parse(
-      fs.readFileSync("./users.json", "utf8")
-    );
+app.get(
+  "/api/users",
 
-    res.json({
-      success: true,
-      total: users.length,
-      data: users,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+  (req, res) => {
+
+    try {
+
+      const users =
+        JSON.parse(
+
+          fs.readFileSync(
+            "./users.json",
+            "utf8"
+          )
+
+        );
+
+      res.json({
+
+        success: true,
+
+        total:
+          users.length,
+
+        data:
+          users
+
+      });
+
+    } catch (err) {
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          err.message
+
+      });
+
+    }
+
   }
-});
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -103,16 +204,41 @@ app.get("/api/users", (req, res) => {
 
 (async () => {
 
-  await schedulerService.runScheduler({
+  try {
 
-    cookie:
-      "SESSION=ISI_SESSION; acw_tc=ISI_ACWTC",
+    await schedulerService.runScheduler({
 
-    imageUrl:
-      "https://dummyimage.com/600x400/000/fff.jpg",
+      cookie:
+        "SESSION=ISI_SESSION_DISINI; acw_tc=ISI_ACWTC_DISINI",
 
-    type: 0
+      imageUrl:
+        "https://dummyimage.com/600x400/000/fff.jpg",
 
-  });
+      type: 0
+
+    });
+
+  } catch (err) {
+
+    console.log(
+      "RUN SCHEDULER ERROR:",
+      err.message
+    );
+
+  }
 
 })();
+
+/*
+|--------------------------------------------------------------------------
+| START SERVER
+|--------------------------------------------------------------------------
+*/
+
+app.listen(PORT, () => {
+
+  console.log(
+    `🚀 Server running on port ${PORT}`
+  );
+
+});
