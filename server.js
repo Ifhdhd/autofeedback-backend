@@ -198,7 +198,7 @@ app.get(
 
 /*
 |--------------------------------------------------------------------------
-| DEBUG RUN SCHEDULER
+| AUTO RUN SCHEDULER
 |--------------------------------------------------------------------------
 */
 
@@ -206,10 +206,25 @@ app.get(
 
   try {
 
+    /*
+    |--------------------------------------------------------------------------
+    | REAL COOKIE
+    |--------------------------------------------------------------------------
+    */
+
+    const cookie =
+
+      "SESSION=N2JiNGRjNzUtNmIzOS00NTkwLTkwZTctYzE1ZjNhMGRlYjY5; acw_tc=9581d31f17779602972407866ebde2e08798567324595c6cece432f0ace79c";
+
+    /*
+    |--------------------------------------------------------------------------
+    | RUN
+    |--------------------------------------------------------------------------
+    */
+
     await schedulerService.runScheduler({
 
-      cookie:
-        "SESSION=ISI_SESSION_DISINI; acw_tc=ISI_ACWTC_DISINI",
+      cookie,
 
       imageUrl:
         "https://dummyimage.com/600x400/000/fff.jpg",
@@ -221,7 +236,10 @@ app.get(
   } catch (err) {
 
     console.log(
-      "RUN SCHEDULER ERROR:",
+      "RUN SCHEDULER ERROR:"
+    );
+
+    console.log(
       err.message
     );
 
