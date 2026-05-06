@@ -1,6 +1,7 @@
 // services/loginService.js
 
 const axios = require("axios");
+const md5 = require("md5");
 
 /*
 |--------------------------------------------------------------------------
@@ -14,28 +15,26 @@ function buildHeaders(cookie = "") {
 
     "Content-Type": "application/json",
 
-    "X-DESENSITIZE": "true",
-
-    "X-COUNTRY-ID": "1",
-
-    countryCode: "ID",
-
-    timeZoneId: "Asia/Jakarta",
-
-    country: "ID",
-
-    "Accept-Language": "in-ID",
-
     deviceId:
       "ffffffff-a665-1a66-0000-0000748ca5f0",
 
-    deviceModel: "5030U",
+    deviceModel:
+      "5030U",
 
-    osVersion: "10",
+    osVersion:
+      "10",
 
-    versionCode: "300",
+    versionCode:
+      "300",
 
-    versionName: "2.9.2-release",
+    versionName:
+      "2.9.2-release",
+
+    countryCode:
+      "ID",
+
+    timeZoneId:
+      "Asia/Jakarta",
 
     "User-Agent":
       "okhttp/4.9.2",
@@ -58,7 +57,7 @@ async function login({
 
   password,
 
-  appVersion = "1"
+  appVersion = "0"
 
 }) {
 
@@ -66,29 +65,15 @@ async function login({
 
     /*
     |--------------------------------------------------------------------------
-    | PASSWORD
+    | MD5 PASSWORD
     |--------------------------------------------------------------------------
     */
 
-    const pwd = password;
+    const pwd =
 
-    /*
-    |--------------------------------------------------------------------------
-    | REQUEST BODY
-    |--------------------------------------------------------------------------
-    */
-
-    const body = {
-
-      account,
-
-      pwd,
-
-      appVersion
-
-    };
-
-    console.log("LOGIN BODY:", body);
+      password.length === 32
+        ? password
+        : md5(password);
 
     /*
     |--------------------------------------------------------------------------
@@ -101,7 +86,15 @@ async function login({
 
         "https://ez-co-app.tin.group/app/offline/user/login",
 
-        body,
+        {
+
+          account,
+
+          pwd,
+
+          appVersion: String(appVersion)
+
+        },
 
         {
 
