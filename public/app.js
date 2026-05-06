@@ -3,43 +3,39 @@
 let SESSION = "";
 let acw_tc = "";
 
-let allTasks = [];
-
 /*
 |--------------------------------------------------------------------------
-| LOADER
+| LOADING SCREEN
 |--------------------------------------------------------------------------
 */
 
-function showLoader(){
+function showLoading(){
 
-  const loader =
+  const loading =
     document.getElementById(
-      "globalLoader"
+      "loadingScreen"
     );
 
-  if(loader){
+  if(loading){
 
-    loader.classList.remove(
-      "loader-hidden"
-    );
+    loading.style.display =
+      "flex";
 
   }
 
 }
 
-function hideLoader(){
+function hideLoading(){
 
-  const loader =
+  const loading =
     document.getElementById(
-      "globalLoader"
+      "loadingScreen"
     );
 
-  if(loader){
+  if(loading){
 
-    loader.classList.add(
-      "loader-hidden"
-    );
+    loading.style.display =
+      "none";
 
   }
 
@@ -55,7 +51,7 @@ async function login(){
 
   try{
 
-    showLoader();
+    showLoading();
 
     const account =
       document.getElementById(
@@ -110,6 +106,12 @@ async function login(){
       acw_tc =
         data.cookies?.acw_tc || "";
 
+      /*
+      |--------------------------------------------------------------------------
+      | SAVE SESSION
+      |--------------------------------------------------------------------------
+      */
+
       localStorage.setItem(
         "SESSION",
         SESSION
@@ -133,6 +135,12 @@ async function login(){
         "dashboard"
       ).style.display = "block";
 
+      /*
+      |--------------------------------------------------------------------------
+      | LOAD TASK TANPA LOADING
+      |--------------------------------------------------------------------------
+      */
+
       await loadTasks();
 
     }else{
@@ -144,13 +152,13 @@ async function login(){
 
     }
 
-    hideLoader();
+    hideLoading();
 
   }catch(err){
 
     console.log(err);
 
-    hideLoader();
+    hideLoading();
 
   }
 
@@ -163,6 +171,14 @@ async function login(){
 */
 
 window.onload = async () => {
+
+  /*
+  |--------------------------------------------------------------------------
+  | HIDE LOADING PAS RELOAD
+  |--------------------------------------------------------------------------
+  */
+
+  hideLoading();
 
   const savedSession =
     localStorage.getItem(
@@ -187,15 +203,15 @@ window.onload = async () => {
       "dashboard"
     ).style.display = "block";
 
+    /*
+    |--------------------------------------------------------------------------
+    | LOAD TASK TANPA LOADING
+    |--------------------------------------------------------------------------
+    */
+
     await loadTasks();
 
   }
-
-  setTimeout(() => {
-
-    hideLoader();
-
-  },800);
 
 };
 
@@ -269,6 +285,45 @@ async function getAddressId(taskId){
 
 /*
 |--------------------------------------------------------------------------
+| SEARCH TASK
+|--------------------------------------------------------------------------
+*/
+
+function searchTask(){
+
+  const input =
+    document.getElementById(
+      "searchInput"
+    ).value.toLowerCase();
+
+  const cards =
+    document.querySelectorAll(
+      ".task-card"
+    );
+
+  cards.forEach(card => {
+
+    const text =
+      card.innerText.toLowerCase();
+
+    if(text.includes(input)){
+
+      card.style.display =
+        "block";
+
+    }else{
+
+      card.style.display =
+        "none";
+
+    }
+
+  });
+
+}
+
+/*
+|--------------------------------------------------------------------------
 | LOAD TASKS
 |--------------------------------------------------------------------------
 */
@@ -276,8 +331,6 @@ async function getAddressId(taskId){
 async function loadTasks(){
 
   try{
-
-    showLoader();
 
     const url =
       `/api/tasks?SESSION=${encodeURIComponent(
@@ -308,8 +361,6 @@ async function loadTasks(){
           ${JSON.stringify(data.message)}
         </p>`;
 
-      hideLoader();
-
       return;
 
     }
@@ -317,221 +368,160 @@ async function loadTasks(){
     const tasks =
       data.data || [];
 
-    allTasks = [];
-
     for(const task of tasks){
+
+      /*
+      |--------------------------------------------------------------------------
+      | TASK ID
+      |--------------------------------------------------------------------------
+      */
 
       const taskId =
         task.taskId ||
         task.id;
+
+      /*
+      |--------------------------------------------------------------------------
+      | ADDRESS ID
+      |--------------------------------------------------------------------------
+      */
 
       const addressId =
         await getAddressId(
           taskId
         );
 
-      task.realAddressId =
-        addressId;
+      console.log(
+        "ADDRESS ID:",
+        addressId
+      );
 
-      allTasks.push(task);
+      /*
+      |--------------------------------------------------------------------------
+      | LOCATION
+      |--------------------------------------------------------------------------
+      */
+
+      const lat =
+        task.addressBo?.latitude || 0;
+
+      const lng =
+        task.addressBo?.longitude || 0;
+
+      /*
+      |--------------------------------------------------------------------------
+      | DPD
+      |--------------------------------------------------------------------------
+      */
+
+      const dpd =
+        Number(task.dpd || 0);
+
+      let badgeClass =
+        "green";
+
+      if(dpd >= 90){
+
+        badgeClass = "red";
+
+      }else if(dpd >= 30){
+
+        badgeClass = "orange";
+
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | CARD
+      |--------------------------------------------------------------------------
+      */
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "task-card";
+
+      div.innerHTML = `
+
+        <div class="task-header">
+
+          <img
+            class="task-photo"
+            src="${
+              task.handHoldPhoto ||
+              "https://via.placeholder.com/100"
+            }"
+          >
+
+          <div>
+
+            <div class="task-name">
+              ${task.userName || "-"}
+
+            </div>
+
+            <div class="task-info">
+              Task ID:
+              ${taskId}
+            </div>
+
+            <div class="task-info">
+              Address ID:
+              ${addressId || "-"}
+            </div>
+
+            <div class="task-info">
+              Phone:
+              ${task.phoneNumber || "-"}
+            </div>
+
+            <div class="task-info">
+              Kota:
+              ${task.addressBo?.city || "-"}
+            </div>
+
+            <span class="badge ${badgeClass}">
+              DPD ${dpd}
+            </span>
+
+          </div>
+
+        </div>
+
+        <iframe
+          src="https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed">
+        </iframe>
+
+        <div class="action-group">
+
+          <button
+            class="btn-success"
+            onclick="openSchedule(
+              '${taskId}',
+              '${addressId}',
+              '${lat}',
+              '${lng}'
+            )"
+          >
+            Schedule
+          </button>
+
+        </div>
+
+      `;
+
+      container.appendChild(div);
 
     }
-
-    renderTasks(allTasks);
-
-    hideLoader();
 
   }catch(err){
 
     console.log(err);
 
-    hideLoader();
-
   }
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| RENDER TASKS
-|--------------------------------------------------------------------------
-*/
-
-function renderTasks(tasks){
-
-  const container =
-    document.getElementById(
-      "tasks"
-    );
-
-  container.innerHTML = "";
-
-  tasks.forEach(task => {
-
-    const taskId =
-      task.taskId ||
-      task.id;
-
-    const addressId =
-      task.realAddressId || "-";
-
-    const lat =
-      task.addressBo?.latitude || 0;
-
-    const lng =
-      task.addressBo?.longitude || 0;
-
-    const dpd =
-      Number(task.dpd || 0);
-
-    let badgeClass =
-      "green";
-
-    if(dpd >= 90){
-
-      badgeClass = "red";
-
-    }else if(dpd >= 30){
-
-      badgeClass = "orange";
-
-    }
-
-    const div =
-      document.createElement(
-        "div"
-      );
-
-    div.className =
-      "task-card";
-
-    div.innerHTML = `
-
-      <div class="task-header">
-
-        <img
-          class="task-photo"
-          src="${
-            task.handHoldPhoto ||
-            "https://via.placeholder.com/100"
-          }"
-        >
-
-        <div>
-
-          <div class="task-name">
-            ${task.userName || "-"}
-          </div>
-
-          <div class="task-info">
-            Task ID:
-            ${taskId}
-          </div>
-
-          <div class="task-info">
-            Address ID:
-            ${addressId}
-          </div>
-
-          <div class="task-info">
-            Phone:
-            ${task.phoneNumber || "-"}
-          </div>
-
-          <span class="badge ${badgeClass}">
-            DPD ${task.dpd || 0}
-          </span>
-
-        </div>
-
-      </div>
-
-      <div class="info-box">
-
-        <div class="info-item">
-          Kota:
-          ${task.addressBo?.city || "-"}
-        </div>
-
-        <div class="info-item">
-          Provinsi:
-          ${task.addressBo?.province || "-"}
-        </div>
-
-      </div>
-
-      <iframe
-        src="https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed">
-      </iframe>
-
-      <div class="action-group">
-
-        <button
-          class="btn-success"
-          onclick="openSchedule(
-            '${taskId}',
-            '${addressId}',
-            '${lat}',
-            '${lng}'
-          )"
-        >
-          Schedule
-        </button>
-
-      </div>
-
-    `;
-
-    container.appendChild(div);
-
-  });
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| SEARCH TASKS
-|--------------------------------------------------------------------------
-*/
-
-function filterTasks(){
-
-  const keyword =
-    document.getElementById(
-      "searchInput"
-    ).value.toLowerCase();
-
-  const filtered =
-    allTasks.filter(task => {
-
-      const taskId =
-        String(
-          task.taskId ||
-          task.id ||
-          ""
-        ).toLowerCase();
-
-      const addressId =
-        String(
-          task.realAddressId ||
-          ""
-        ).toLowerCase();
-
-      const userName =
-        String(
-          task.userName ||
-          ""
-        ).toLowerCase();
-
-      return (
-        taskId.includes(keyword) ||
-        addressId.includes(keyword) ||
-        userName.includes(keyword)
-      );
-
-    });
-
-  renderTasks(filtered);
 
 }
 
@@ -548,16 +538,34 @@ function openSchedule(
   lng
 ){
 
-  showLoader();
+  showLoading();
+
+  const url =
+    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
   setTimeout(() => {
 
-    const url =
-      `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
+    window.location.href = url;
+
+  }, 500);
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| OPEN SAVED SCHEDULE
+|--------------------------------------------------------------------------
+*/
+
+function openSchedules(){
+
+  showLoading();
+
+  setTimeout(() => {
 
     window.location.href =
-      url;
+      "/schedules.html";
 
-  },600);
+  }, 500);
 
 }
