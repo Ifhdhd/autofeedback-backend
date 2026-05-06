@@ -28,7 +28,15 @@ async function runScheduler({
   try {
 
     console.log(
-      "AUTO FEEDBACK START..."
+      "===================================="
+    );
+
+    console.log(
+      "AUTO FEEDBACK START"
+    );
+
+    console.log(
+      "===================================="
     );
 
     /*
@@ -62,7 +70,7 @@ async function runScheduler({
 
     /*
     |--------------------------------------------------------------------------
-    | LOOP TASKS
+    | LOOP TASK
     |--------------------------------------------------------------------------
     */
 
@@ -70,16 +78,62 @@ async function runScheduler({
 
       try {
 
-        const taskId =
-          task.taskId;
+        console.log(
+          "===================================="
+        );
 
         console.log(
-          `PROCESS TASK ${taskId}`
+          "TASK OBJECT:"
+        );
+
+        console.log(
+          JSON.stringify(
+            task,
+            null,
+            2
+          )
         );
 
         /*
         |--------------------------------------------------------------------------
-        | GET ADDRESS
+        | FIX TASK ID
+        |--------------------------------------------------------------------------
+        */
+
+        const taskId =
+
+          task.taskId ||
+
+          task.id ||
+
+          task.caseId ||
+
+          task.orderId;
+
+        console.log(
+          "TASK ID:",
+          taskId
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | TASK ID CHECK
+        |--------------------------------------------------------------------------
+        */
+
+        if (!taskId) {
+
+          console.log(
+            "TASK ID EMPTY"
+          );
+
+          continue;
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | GET ADDRESS DETAIL
         |--------------------------------------------------------------------------
         */
 
@@ -89,12 +143,24 @@ async function runScheduler({
             taskId
           );
 
+        console.log(
+          "ADDRESS RESULT:"
+        );
+
+        console.log(
+          JSON.stringify(
+            addressResult,
+            null,
+            2
+          )
+        );
+
         if (
           !addressResult.success
         ) {
 
           console.log(
-            `ADDRESS FAILED ${taskId}`
+            "FAILED GET ADDRESS"
           );
 
           continue;
@@ -104,23 +170,55 @@ async function runScheduler({
         const address =
           addressResult.data;
 
+        /*
+        |--------------------------------------------------------------------------
+        | ADDRESS DEBUG
+        |--------------------------------------------------------------------------
+        */
+
         console.log(
-          "ADDRESS:",
-          address
+          "ADDRESS DATA:"
+        );
+
+        console.log(
+          JSON.stringify(
+            address,
+            null,
+            2
+          )
         );
 
         /*
         |--------------------------------------------------------------------------
-        | CHECK ADDRESS ID
+        | FIX ADDRESS ID
         |--------------------------------------------------------------------------
         */
 
-        if (
-          !address.addressId
-        ) {
+        const addressId =
+
+          address.addressId ||
+
+          address.id ||
+
+          address.raw?.addressId ||
+
+          address.raw?.id;
+
+        console.log(
+          "ADDRESS ID:",
+          addressId
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADDRESS ID CHECK
+        |--------------------------------------------------------------------------
+        */
+
+        if (!addressId) {
 
           console.log(
-            `ADDRESS ID EMPTY ${taskId}`
+            "ADDRESS ID EMPTY"
           );
 
           continue;
@@ -143,6 +241,11 @@ async function runScheduler({
           .replace(/\s+/g, " ")
           .trim();
 
+        console.log(
+          "ADDRESS CONTENT:",
+          addressContent
+        );
+
         /*
         |--------------------------------------------------------------------------
         | AUTO CHECKIN
@@ -157,9 +260,7 @@ async function runScheduler({
             addressContent,
 
             addressId:
-              String(
-                address.addressId
-              ),
+              String(addressId),
 
             addressLatitude:
               -6.990088,
@@ -176,8 +277,15 @@ async function runScheduler({
           });
 
         console.log(
-          "CHECKIN RESULT:",
-          result
+          "CHECKIN RESULT:"
+        );
+
+        console.log(
+          JSON.stringify(
+            result,
+            null,
+            2
+          )
         );
 
       } catch (err) {
@@ -190,6 +298,18 @@ async function runScheduler({
       }
 
     }
+
+    console.log(
+      "===================================="
+    );
+
+    console.log(
+      "AUTO FEEDBACK DONE"
+    );
+
+    console.log(
+      "===================================="
+    );
 
   } catch (err) {
 
