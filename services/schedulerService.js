@@ -1,20 +1,17 @@
 // services/schedulerService.js
 
-const {
-  queryTasks
-} = require("./taskService");
+const taskService =
+  require("./taskService");
 
-const {
-  getAddressDetail
-} = require("./addressService");
+const addressService =
+  require("./addressService");
 
-const {
-  autoCheckin
-} = require("./checkinService");
+const checkinService =
+  require("./checkinService");
 
 /*
 |--------------------------------------------------------------------------
-| RUN AUTO CHECKIN
+| RUN SCHEDULER
 |--------------------------------------------------------------------------
 */
 
@@ -22,14 +19,17 @@ async function runScheduler({
 
   cookie,
 
-  latitude,
-  longitude,
+  imageUrl,
 
-  imageUrl
+  type = 0
 
 }) {
 
   try {
+
+    console.log(
+      "AUTO FEEDBACK START..."
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -37,23 +37,27 @@ async function runScheduler({
     |--------------------------------------------------------------------------
     */
 
-    const tasksResult =
-      await queryTasks(
+    const taskResult =
+      await taskService.queryTasks(
         cookie
       );
 
-    if (!tasksResult.success) {
+    if (!taskResult.success) {
 
-      return tasksResult;
+      console.log(
+        "FAILED GET TASK:",
+        taskResult.message
+      );
+
+      return;
 
     }
 
     const tasks =
-      tasksResult.data;
+      taskResult.data || [];
 
     console.log(
-      "TOTAL TASK:",
-      tasks.length
+      `TOTAL TASK: ${tasks.length}`
     );
 
     /*
@@ -67,11 +71,10 @@ async function runScheduler({
       try {
 
         const taskId =
-          task.id;
+          task.taskId;
 
         console.log(
-          "TASK ID:",
-          taskId
+          `PROCESS TASK ${taskId}`
         );
 
         /*
@@ -81,19 +84,18 @@ async function runScheduler({
         */
 
         const addressResult =
-          await getAddressDetail(
+          await addressService.getAddressDetail(
             cookie,
             taskId
           );
 
-        console.log(
-          "ADDRESS RESULT:",
-          addressResult
-        );
-
         if (
           !addressResult.success
         ) {
+
+          console.log(
+            `ADDRESS FAILED ${taskId}`
+          );
 
           continue;
 
@@ -102,9 +104,14 @@ async function runScheduler({
         const address =
           addressResult.data;
 
+        console.log(
+          "ADDRESS:",
+          address
+        );
+
         /*
         |--------------------------------------------------------------------------
-        | VALIDASI ADDRESS ID
+        | CHECK ADDRESS ID
         |--------------------------------------------------------------------------
         */
 
@@ -113,17 +120,28 @@ async function runScheduler({
         ) {
 
           console.log(
-            "ADDRESS ID EMPTY"
+            `ADDRESS ID EMPTY ${taskId}`
           );
 
           continue;
 
         }
 
-        console.log(
-          "ADDRESS ID:",
-          address.addressId
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | BUILD ADDRESS CONTENT
+        |--------------------------------------------------------------------------
+        */
+
+        const addressContent =
+
+          `${address.street || ""} ` +
+          `${address.district || ""} ` +
+          `${address.city || ""} ` +
+          `${address.province || ""}`
+
+          .replace(/\s+/g, " ")
+          .trim();
 
         /*
         |--------------------------------------------------------------------------
@@ -131,34 +149,35 @@ async function runScheduler({
         |--------------------------------------------------------------------------
         */
 
-        const checkin =
-          await autoCheckin({
+        const result =
+          await checkinService.autoCheckin({
 
             cookie,
 
-            taskId,
+            addressContent,
 
             addressId:
-              address.addressId,
-
-            addressContent:
-              address.fullAddress,
+              String(
+                address.addressId
+              ),
 
             addressLatitude:
-              latitude,
+              -6.990088,
 
             addressLongitude:
-              longitude,
+              108.474472,
 
             imageUrl,
 
-            type: 0
+            taskId,
+
+            type
 
           });
 
         console.log(
           "CHECKIN RESULT:",
-          checkin
+          result
         );
 
       } catch (err) {
@@ -172,21 +191,40 @@ async function runScheduler({
 
     }
 
-    return {
-      success: true
-    };
-
   } catch (err) {
 
-    return {
-      success: false,
-      message:
-        err.message
-    };
+    console.log(
+      "SCHEDULER ERROR:",
+      err.message
+    );
 
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| START SCHEDULER
+|--------------------------------------------------------------------------
+*/
+
+async function startScheduler() {
+
+  console.log(
+    "Scheduler started..."
+  );
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+*/
+
 module.exports = {
-  runScheduler
+
+  runScheduler,
+
+  startScheduler
+
 };
