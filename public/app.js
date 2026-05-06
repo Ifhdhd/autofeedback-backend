@@ -7,40 +7,32 @@ let allTasks = [];
 
 /*
 |--------------------------------------------------------------------------
-| LOADER
+| LOADING
 |--------------------------------------------------------------------------
 */
 
-function showLoader(){
+function showLoading(){
 
-  const loader =
+  const loading =
     document.getElementById(
-      "globalLoader"
+      "pageLoader"
     );
 
-  if(loader){
-
-    loader.classList.remove(
-      "loader-hidden"
-    );
-
+  if(loading){
+    loading.style.display = "flex";
   }
 
 }
 
-function hideLoader(){
+function hideLoading(){
 
-  const loader =
+  const loading =
     document.getElementById(
-      "globalLoader"
+      "pageLoader"
     );
 
-  if(loader){
-
-    loader.classList.add(
-      "loader-hidden"
-    );
-
+  if(loading){
+    loading.style.display = "none";
   }
 
 }
@@ -55,7 +47,7 @@ async function login(){
 
   try{
 
-    showLoader();
+    showLoading();
 
     const account =
       document.getElementById(
@@ -71,6 +63,23 @@ async function login(){
       document.getElementById(
         "zizhangyi"
       ).value;
+
+    if(!account || !password){
+
+      hideLoading();
+
+      document.getElementById(
+        "loginResult"
+      ).innerHTML =
+        `
+        <p class="error">
+          Account dan password wajib diisi
+        </p>
+        `;
+
+      return;
+
+    }
 
     const res =
       await fetch(
@@ -102,6 +111,12 @@ async function login(){
         "loginResult"
       );
 
+    /*
+    |--------------------------------------------------------------------------
+    | SUCCESS
+    |--------------------------------------------------------------------------
+    */
+
     if(data.success){
 
       SESSION =
@@ -109,6 +124,12 @@ async function login(){
 
       acw_tc =
         data.cookies?.acw_tc || "";
+
+      /*
+      |--------------------------------------------------------------------------
+      | SAVE SESSION
+      |--------------------------------------------------------------------------
+      */
 
       localStorage.setItem(
         "SESSION",
@@ -121,9 +142,17 @@ async function login(){
       );
 
       result.innerHTML =
-        `<p class="success">
+        `
+        <p class="success">
           Login berhasil
-        </p>`;
+        </p>
+        `;
+
+      /*
+      |--------------------------------------------------------------------------
+      | SHOW DASHBOARD
+      |--------------------------------------------------------------------------
+      */
 
       document.getElementById(
         "loginCard"
@@ -133,24 +162,41 @@ async function login(){
         "dashboard"
       ).style.display = "block";
 
+      /*
+      |--------------------------------------------------------------------------
+      | LOAD TASKS
+      |--------------------------------------------------------------------------
+      */
+
       await loadTasks();
 
     }else{
 
       result.innerHTML =
-        `<p class="error">
+        `
+        <p class="error">
           ${JSON.stringify(data.message)}
-        </p>`;
+        </p>
+        `;
 
     }
 
-    hideLoader();
+    hideLoading();
 
   }catch(err){
 
     console.log(err);
 
-    hideLoader();
+    hideLoading();
+
+    document.getElementById(
+      "loginResult"
+    ).innerHTML =
+      `
+      <p class="error">
+        ${err.message}
+      </p>
+      `;
 
   }
 
@@ -190,12 +236,6 @@ window.onload = async () => {
     await loadTasks();
 
   }
-
-  setTimeout(() => {
-
-    hideLoader();
-
-  },800);
 
 };
 
@@ -277,7 +317,17 @@ async function loadTasks(){
 
   try{
 
-    showLoader();
+    const container =
+      document.getElementById(
+        "tasks"
+      );
+
+    container.innerHTML =
+      `
+      <div class="empty-text">
+        Memuat data task...
+      </div>
+      `;
 
     const url =
       `/api/tasks?SESSION=${encodeURIComponent(
@@ -294,21 +344,14 @@ async function loadTasks(){
 
     console.log(data);
 
-    const container =
-      document.getElementById(
-        "tasks"
-      );
-
-    container.innerHTML = "";
-
     if(!data.success){
 
       container.innerHTML =
-        `<p class="error">
+        `
+        <p class="error">
           ${JSON.stringify(data.message)}
-        </p>`;
-
-      hideLoader();
+        </p>
+        `;
 
       return;
 
@@ -319,33 +362,71 @@ async function loadTasks(){
 
     allTasks = [];
 
+    /*
+    |--------------------------------------------------------------------------
+    | LOOP TASKS
+    |--------------------------------------------------------------------------
+    */
+
     for(const task of tasks){
 
       const taskId =
         task.taskId ||
         task.id;
 
+      /*
+      |--------------------------------------------------------------------------
+      | ADDRESS ID
+      |--------------------------------------------------------------------------
+      */
+
       const addressId =
         await getAddressId(
           taskId
         );
 
-      task.realAddressId =
-        addressId;
+      const lat =
+        task.addressBo?.latitude || 0;
 
-      allTasks.push(task);
+      const lng =
+        task.addressBo?.longitude || 0;
+
+      const taskData = {
+
+        task,
+
+        taskId,
+
+        addressId,
+
+        lat,
+
+        lng
+
+      };
+
+      allTasks.push(
+        taskData
+      );
 
     }
 
-    renderTasks(allTasks);
-
-    hideLoader();
+    renderTasks(
+      allTasks
+    );
 
   }catch(err){
 
     console.log(err);
 
-    hideLoader();
+    document.getElementById(
+      "tasks"
+    ).innerHTML =
+      `
+      <p class="error">
+        ${err.message}
+      </p>
+      `;
 
   }
 
@@ -366,20 +447,60 @@ function renderTasks(tasks){
 
   container.innerHTML = "";
 
-  tasks.forEach(task => {
+  /*
+  |--------------------------------------------------------------------------
+  | EMPTY
+  |--------------------------------------------------------------------------
+  */
 
-    const taskId =
-      task.taskId ||
-      task.id;
+  if(tasks.length === 0){
 
-    const addressId =
-      task.realAddressId || "-";
+    container.innerHTML =
+      `
+      <div class="empty-text">
+        Task tidak ditemukan
+      </div>
+      `;
 
-    const lat =
-      task.addressBo?.latitude || 0;
+    return;
 
-    const lng =
-      task.addressBo?.longitude || 0;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | GRID
+  |--------------------------------------------------------------------------
+  */
+
+  const grid =
+    document.createElement(
+      "div"
+    );
+
+  grid.className =
+    "task-grid";
+
+  /*
+  |--------------------------------------------------------------------------
+  | LOOP
+  |--------------------------------------------------------------------------
+  */
+
+  tasks.forEach(item => {
+
+    const {
+      task,
+      taskId,
+      addressId,
+      lat,
+      lng
+    } = item;
+
+    /*
+    |--------------------------------------------------------------------------
+    | DPD
+    |--------------------------------------------------------------------------
+    */
 
     const dpd =
       Number(task.dpd || 0);
@@ -396,6 +517,12 @@ function renderTasks(tasks){
       badgeClass = "orange";
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CARD
+    |--------------------------------------------------------------------------
+    */
 
     const div =
       document.createElement(
@@ -430,12 +557,22 @@ function renderTasks(tasks){
 
           <div class="task-info">
             Address ID:
-            ${addressId}
+            ${addressId || "-"}
           </div>
 
           <div class="task-info">
             Phone:
             ${task.phoneNumber || "-"}
+          </div>
+
+          <div class="task-info">
+            Debt:
+            Rp ${task.formatDebt || 0}
+          </div>
+
+          <div class="task-info">
+            ${task.addressBo?.city || "-"},
+            ${task.addressBo?.province || "-"}
           </div>
 
           <span class="badge ${badgeClass}">
@@ -449,13 +586,13 @@ function renderTasks(tasks){
       <div class="info-box">
 
         <div class="info-item">
-          Kota:
-          ${task.addressBo?.city || "-"}
+          <b>Latitude:</b>
+          ${lat}
         </div>
 
         <div class="info-item">
-          Provinsi:
-          ${task.addressBo?.province || "-"}
+          <b>Longitude:</b>
+          ${lng}
         </div>
 
       </div>
@@ -482,56 +619,81 @@ function renderTasks(tasks){
 
     `;
 
-    container.appendChild(div);
+    grid.appendChild(div);
 
   });
+
+  container.appendChild(
+    grid
+  );
 
 }
 
 /*
 |--------------------------------------------------------------------------
-| SEARCH TASKS
+| SEARCH TASK
 |--------------------------------------------------------------------------
 */
 
-function filterTasks(){
+function searchTask(){
 
   const keyword =
     document.getElementById(
       "searchInput"
-    ).value.toLowerCase();
+    ).value
+    .toLowerCase();
+
+  /*
+  |--------------------------------------------------------------------------
+  | FILTER
+  |--------------------------------------------------------------------------
+  */
 
   const filtered =
-    allTasks.filter(task => {
+    allTasks.filter(item => {
 
-      const taskId =
-        String(
-          task.taskId ||
-          task.id ||
-          ""
-        ).toLowerCase();
-
-      const addressId =
-        String(
-          task.realAddressId ||
-          ""
-        ).toLowerCase();
-
-      const userName =
-        String(
-          task.userName ||
-          ""
-        ).toLowerCase();
+      const task =
+        item.task;
 
       return (
-        taskId.includes(keyword) ||
-        addressId.includes(keyword) ||
-        userName.includes(keyword)
+
+        String(
+          item.taskId
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        String(
+          item.addressId
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        String(
+          task.userName || ""
+        )
+        .toLowerCase()
+        .includes(keyword)
+
+        ||
+
+        String(
+          task.phoneNumber || ""
+        )
+        .toLowerCase()
+        .includes(keyword)
+
       );
 
     });
 
-  renderTasks(filtered);
+  renderTasks(
+    filtered
+  );
 
 }
 
@@ -548,16 +710,16 @@ function openSchedule(
   lng
 ){
 
-  showLoader();
+  showLoading();
+
+  const url =
+    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
   setTimeout(() => {
-
-    const url =
-      `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
 
     window.location.href =
       url;
 
-  },600);
+  }, 400);
 
 }
