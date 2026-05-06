@@ -9,9 +9,9 @@ let acw_tc = "";
 |--------------------------------------------------------------------------
 */
 
-async function login() {
+async function login(){
 
-  try {
+  try{
 
     const account =
       document.getElementById(
@@ -32,18 +32,22 @@ async function login() {
       await fetch(
         "/api/auth/login",
         {
-          method: "POST",
 
-          headers: {
+          method:"POST",
+
+          headers:{
             "Content-Type":
               "application/json"
           },
 
-          body: JSON.stringify({
+          body:JSON.stringify({
+
             account,
             password,
             appVersion
+
           })
+
         }
       );
 
@@ -57,13 +61,7 @@ async function login() {
         "loginResult"
       );
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOGIN SUCCESS
-    |--------------------------------------------------------------------------
-    */
-
-    if (data.success) {
+    if(data.success){
 
       SESSION =
         data.cookies?.SESSION || "";
@@ -71,12 +69,26 @@ async function login() {
       acw_tc =
         data.cookies?.acw_tc || "";
 
+      /*
+      |--------------------------------------------------------------------------
+      | SAVE SESSION
+      |--------------------------------------------------------------------------
+      */
+
+      localStorage.setItem(
+        "SESSION",
+        SESSION
+      );
+
+      localStorage.setItem(
+        "acw_tc",
+        acw_tc
+      );
+
       result.innerHTML =
-        `
-        <p class="success">
+        `<p class="success">
           Login berhasil
-        </p>
-      `;
+        </p>`;
 
       document.getElementById(
         "loginCard"
@@ -88,33 +100,59 @@ async function login() {
 
       loadTasks();
 
-    } else {
+    }else{
 
       result.innerHTML =
-        `
-        <p class="error">
+        `<p class="error">
           ${JSON.stringify(data.message)}
-        </p>
-      `;
+        </p>`;
 
     }
 
-  } catch (err) {
+  }catch(err){
 
     console.log(err);
-
-    document.getElementById(
-      "loginResult"
-    ).innerHTML =
-      `
-      <p class="error">
-        ${err.message}
-      </p>
-    `;
 
   }
 
 }
+
+/*
+|--------------------------------------------------------------------------
+| AUTO LOGIN
+|--------------------------------------------------------------------------
+*/
+
+window.onload = () => {
+
+  const savedSession =
+    localStorage.getItem(
+      "SESSION"
+    );
+
+  const savedAcw =
+    localStorage.getItem(
+      "acw_tc"
+    );
+
+  if(savedSession){
+
+    SESSION = savedSession;
+    acw_tc = savedAcw;
+
+    document.getElementById(
+      "loginCard"
+    ).style.display = "none";
+
+    document.getElementById(
+      "dashboard"
+    ).style.display = "block";
+
+    loadTasks();
+
+  }
+
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -122,92 +160,11 @@ async function login() {
 |--------------------------------------------------------------------------
 */
 
-function logout() {
+function logout(){
 
-  SESSION = "";
-  acw_tc = "";
+  localStorage.clear();
 
   location.reload();
-
-}
-
-/*
-|--------------------------------------------------------------------------
-| GET ADDRESS ID
-|--------------------------------------------------------------------------
-*/
-
-async function getAddressId(taskId) {
-
-  try {
-
-    const res =
-      await fetch(
-
-        `/api/tasks/address/${taskId}?SESSION=${encodeURIComponent(
-          SESSION
-        )}&acw_tc=${encodeURIComponent(
-          acw_tc
-        )}`
-
-      );
-
-    const data =
-      await res.json();
-
-    console.log(
-      "ADDRESS API:",
-      data
-    );
-
-    if (
-      !data.success
-    ) {
-      return "";
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | ARRAY ADDRESS
-    |--------------------------------------------------------------------------
-    */
-
-    const addresses =
-      data.data?.data || [];
-
-    if (
-      !addresses.length
-    ) {
-      return "";
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | ADDRESS ID
-    |--------------------------------------------------------------------------
-    */
-
-    const address =
-      addresses[0];
-
-    return (
-      address.addressId ||
-
-      address.id ||
-
-      ""
-    );
-
-  } catch (err) {
-
-    console.log(
-      "GET ADDRESS ERROR:",
-      err
-    );
-
-    return "";
-
-  }
 
 }
 
@@ -217,9 +174,9 @@ async function getAddressId(taskId) {
 |--------------------------------------------------------------------------
 */
 
-async function loadTasks() {
+async function loadTasks(){
 
-  try {
+  try{
 
     const url =
       `/api/tasks?SESSION=${encodeURIComponent(
@@ -243,20 +200,12 @@ async function loadTasks() {
 
     container.innerHTML = "";
 
-    /*
-    |--------------------------------------------------------------------------
-    | ERROR
-    |--------------------------------------------------------------------------
-    */
-
-    if (!data.success) {
+    if(!data.success){
 
       container.innerHTML =
-        `
-        <p class="error">
+        `<p class="error">
           ${JSON.stringify(data.message)}
-        </p>
-      `;
+        </p>`;
 
       return;
 
@@ -265,51 +214,57 @@ async function loadTasks() {
     const tasks =
       data.data || [];
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOOP TASKS
-    |--------------------------------------------------------------------------
-    */
-
-    for (const task of tasks) {
+    for(const task of tasks){
 
       /*
       |--------------------------------------------------------------------------
-      | TASK ID
+      | GET ADDRESS ID REALTIME
       |--------------------------------------------------------------------------
       */
 
-      const taskId =
+      let addressId = "";
 
-        task.taskId ||
+      try{
 
-        task.id ||
+        const addrRes =
+          await fetch(
 
-        "";
+            `/api/tasks/address/${task.id}?SESSION=${encodeURIComponent(
+              SESSION
+            )}&acw_tc=${encodeURIComponent(
+              acw_tc
+            )}`
 
-      /*
-      |--------------------------------------------------------------------------
-      | GET ADDRESS ID REAL
-      |--------------------------------------------------------------------------
-      */
+          );
 
-      const addressId =
-        await getAddressId(
-          taskId
+        const addrData =
+          await addrRes.json();
+
+        console.log(
+          "ADDRESS:",
+          addrData
         );
 
-      console.log(
-        "TASK:",
-        taskId,
-        "ADDRESS:",
-        addressId
-      );
+        addressId =
 
-      /*
-      |--------------------------------------------------------------------------
-      | LOCATION
-      |--------------------------------------------------------------------------
-      */
+          addrData?.data?.addressId ||
+
+          addrData?.data?.id ||
+
+          addrData?.data?.[0]?.addressId ||
+
+          addrData?.data?.[0]?.id ||
+
+          "";
+
+      }catch(err){
+
+        console.log(
+          "ADDRESS ERROR:",
+          err
+        );
+
+      }
 
       const lat =
         task.addressBo?.latitude || 0;
@@ -317,33 +272,21 @@ async function loadTasks() {
       const lng =
         task.addressBo?.longitude || 0;
 
-      /*
-      |--------------------------------------------------------------------------
-      | DPD
-      |--------------------------------------------------------------------------
-      */
-
       const dpd =
         Number(task.dpd || 0);
 
       let badgeClass =
         "green";
 
-      if (dpd >= 90) {
+      if(dpd >= 90){
 
         badgeClass = "red";
 
-      } else if (dpd >= 30) {
+      }else if(dpd >= 30){
 
         badgeClass = "orange";
 
       }
-
-      /*
-      |--------------------------------------------------------------------------
-      | CARD
-      |--------------------------------------------------------------------------
-      */
 
       const div =
         document.createElement(
@@ -352,12 +295,6 @@ async function loadTasks() {
 
       div.className =
         "task-card";
-
-      /*
-      |--------------------------------------------------------------------------
-      | HTML
-      |--------------------------------------------------------------------------
-      */
 
       div.innerHTML = `
 
@@ -379,7 +316,7 @@ async function loadTasks() {
 
             <div class="task-info">
               Task ID:
-              ${taskId}
+              ${task.id || "-"}
             </div>
 
             <div class="task-info">
@@ -433,7 +370,7 @@ async function loadTasks() {
           <button
             class="btn-success"
             onclick="openSchedule(
-              '${taskId}',
+              '${task.id}',
               '${addressId}',
               '${lat}',
               '${lng}'
@@ -450,18 +387,9 @@ async function loadTasks() {
 
     }
 
-  } catch (err) {
+  }catch(err){
 
     console.log(err);
-
-    document.getElementById(
-      "tasks"
-    ).innerHTML =
-      `
-      <p class="error">
-        ${err.message}
-      </p>
-    `;
 
   }
 
@@ -478,11 +406,41 @@ function openSchedule(
   addressId,
   lat,
   lng
-) {
+){
 
-  const url =
-    `/schedule.html?taskId=${taskId}&addressId=${addressId}&lat=${lat}&lng=${lng}`;
+  /*
+  |--------------------------------------------------------------------------
+  | SAVE SESSION
+  |--------------------------------------------------------------------------
+  */
 
-  window.location.href = url;
+  localStorage.setItem(
+    "scheduleTaskId",
+    taskId
+  );
+
+  localStorage.setItem(
+    "scheduleAddressId",
+    addressId
+  );
+
+  localStorage.setItem(
+    "scheduleLat",
+    lat
+  );
+
+  localStorage.setItem(
+    "scheduleLng",
+    lng
+  );
+
+  /*
+  |--------------------------------------------------------------------------
+  | REDIRECT
+  |--------------------------------------------------------------------------
+  */
+
+  window.location.href =
+    "/schedule.html";
 
 }
