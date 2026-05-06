@@ -35,7 +35,10 @@ async function queryTaskAddress(
       response.data?.data || [];
 
     console.log(
-      "QUERY TASK ADDRESS:",
+      "FULL ADDRESS RESPONSE:"
+    );
+
+    console.log(
       JSON.stringify(
         addresses,
         null,
@@ -52,6 +55,12 @@ async function queryTaskAddress(
     };
 
   } catch (err) {
+
+    console.log(
+      "QUERY ADDRESS ERROR:",
+      err.response?.data ||
+      err.message
+    );
 
     return {
       success: false,
@@ -89,6 +98,18 @@ async function getPrimaryAddress(
     const address =
       result.data[0];
 
+    console.log(
+      "PRIMARY ADDRESS:"
+    );
+
+    console.log(
+      JSON.stringify(
+        address,
+        null,
+        2
+      )
+    );
+
     if (!address) {
 
       return {
@@ -98,15 +119,6 @@ async function getPrimaryAddress(
       };
 
     }
-
-    console.log(
-      "PRIMARY ADDRESS:",
-      JSON.stringify(
-        address,
-        null,
-        2
-      )
-    );
 
     return {
       success: true,
@@ -172,21 +184,34 @@ async function getAddressDetail(
 
     /*
     |--------------------------------------------------------------------------
-    | ADDRESS ID FIX
+    | DEBUG SEMUA FIELD
+    |--------------------------------------------------------------------------
+    */
+
+    console.log(
+      "ADDRESS KEYS:"
+    );
+
+    console.log(
+      Object.keys(address)
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADDRESS ID
     |--------------------------------------------------------------------------
     */
 
     const addressId =
-      Number(
-        address.addressId ||
-        address.id ||
-        address.addrId ||
-        address.address_id ||
-        0
-      );
+      address.addressId ||
+      address.id ||
+      address.addrId ||
+      address.address_id ||
+      address.userAddressId ||
+      "";
 
     console.log(
-      "ADDRESS ID:",
+      "FINAL ADDRESS ID:",
       addressId
     );
 
@@ -199,22 +224,22 @@ async function getAddressDetail(
         addressId,
 
         uid:
-          address.uid,
+          address.uid || "",
 
         province:
-          address.province,
+          address.province || "",
 
         city:
-          address.city,
+          address.city || "",
 
         district:
-          address.district,
+          address.district || "",
 
         street:
-          address.street,
+          address.street || "",
 
         roomNumber:
-          address.roomNumber,
+          address.roomNumber || "",
 
         latitude:
           Number(
