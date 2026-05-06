@@ -1,3 +1,5 @@
+// services/checkinService.js
+
 const axios = require("axios");
 
 const {
@@ -35,7 +37,6 @@ function calculateDistance(
     toRad(lon2 - lon1);
 
   const a =
-
     Math.sin(Δφ / 2) *
     Math.sin(Δφ / 2) +
 
@@ -76,27 +77,11 @@ function buildCheckinPayload({
 
 }) {
 
-  /*
-  |--------------------------------------------------------------------------
-  | GPS SAMA DENGAN TITIK NASABAH
-  |--------------------------------------------------------------------------
-  */
-
   const latitude =
-    parseFloat(
-      addressLatitude
-    );
+    addressLatitude;
 
   const longitude =
-    parseFloat(
-      addressLongitude
-    );
-
-  /*
-  |--------------------------------------------------------------------------
-  | DISTANCE
-  |--------------------------------------------------------------------------
-  */
+    addressLongitude;
 
   const distance =
     calculateDistance(
@@ -108,42 +93,29 @@ function buildCheckinPayload({
 
   return {
 
-    /*
-    |--------------------------------------------------------------------------
-    | PENTING
-    |--------------------------------------------------------------------------
-    */
-
-    addressId,
-
     addressContent,
 
-    addressLatitude:
-      parseFloat(
-        addressLatitude
-      ),
+    // FIX
+    addressId:
+      String(addressId),
 
-    addressLongitude:
-      parseFloat(
-        addressLongitude
-      ),
+    addressLatitude,
+    addressLongitude,
 
     latitude,
     longitude,
 
     distance:
-      Math.floor(
-        distance
-      ).toString(),
+      distance.toString(),
 
     imageUrl,
 
-    taskId,
+    taskId:
+      String(taskId),
 
     type
 
   };
-
 }
 
 /*
@@ -159,49 +131,43 @@ async function addCheckin(
 
   try {
 
+    console.log(
+      "CHECKIN PAYLOAD:",
+      payload
+    );
+
     const response =
       await axios.post(
-
         `${BASE_URL}/app/offline/checkin`,
-
         payload,
-
         {
           headers:
-            buildHeaders(
-              cookie
-            )
+            buildHeaders(cookie)
         }
-
       );
 
     return {
-
       success: true,
-
       data:
-        response.data.data,
-
-      raw:
-        response.data
-
+        response.data,
     };
 
   } catch (err) {
 
+    console.log(
+      "CHECKIN ERROR:",
+      err.response?.data ||
+      err.message
+    );
+
     return {
-
       success: false,
-
       message:
-
         err.response?.data ||
         err.message
-
     };
 
   }
-
 }
 
 /*
@@ -245,45 +211,25 @@ async function autoCheckin({
 
       });
 
-    console.log(
-      "CHECKIN PAYLOAD:",
-      JSON.stringify(
-        payload,
-        null,
-        2
-      )
+    return await addCheckin(
+      cookie,
+      payload
     );
-
-    const result =
-      await addCheckin(
-        cookie,
-        payload
-      );
-
-    return result;
 
   } catch (err) {
 
     return {
-
       success: false,
       message:
         err.message
-
     };
 
   }
-
 }
 
 module.exports = {
-
   calculateDistance,
-
   buildCheckinPayload,
-
   addCheckin,
-
   autoCheckin
-
 };
