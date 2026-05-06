@@ -1,7 +1,13 @@
-const axios = require("axios");
-const { buildHeaders } = require("./loginService");
+// services/addressService.js
 
-const BASE_URL = "https://ez-co-app.tin.group";
+const axios = require("axios");
+
+const {
+  buildHeaders
+} = require("./loginService");
+
+const BASE_URL =
+  "https://ez-co-app.tin.group";
 
 /*
 |--------------------------------------------------------------------------
@@ -9,24 +15,40 @@ const BASE_URL = "https://ez-co-app.tin.group";
 |--------------------------------------------------------------------------
 */
 
-async function queryTaskAddress(cookie, taskId) {
+async function queryTaskAddress(
+  cookie,
+  taskId
+) {
 
   try {
 
-    const response = await axios.get(
-      `${BASE_URL}/app/offline/task/queryTaskAddress?taskId=${taskId}`,
-      {
-        headers: buildHeaders(cookie)
-      }
-    );
+    const response =
+      await axios.get(
+        `${BASE_URL}/app/offline/task/queryTaskAddress?taskId=${taskId}`,
+        {
+          headers:
+            buildHeaders(cookie)
+        }
+      );
 
     const addresses =
       response.data?.data || [];
 
+    console.log(
+      "QUERY TASK ADDRESS:",
+      JSON.stringify(
+        addresses,
+        null,
+        2
+      )
+    );
+
     return {
       success: true,
-      total: addresses.length,
-      data: addresses
+      total:
+        addresses.length,
+      data:
+        addresses
     };
 
   } catch (err) {
@@ -39,7 +61,6 @@ async function queryTaskAddress(cookie, taskId) {
     };
 
   }
-
 }
 
 /*
@@ -78,6 +99,15 @@ async function getPrimaryAddress(
 
     }
 
+    console.log(
+      "PRIMARY ADDRESS:",
+      JSON.stringify(
+        address,
+        null,
+        2
+      )
+    );
+
     return {
       success: true,
       data: address
@@ -87,16 +117,16 @@ async function getPrimaryAddress(
 
     return {
       success: false,
-      message: err.message
+      message:
+        err.message
     };
 
   }
-
 }
 
 /*
 |--------------------------------------------------------------------------
-| BUILD ADDRESS STRING
+| FORMAT ADDRESS
 |--------------------------------------------------------------------------
 */
 
@@ -104,17 +134,14 @@ function buildAddressString(
   address
 ) {
 
-  return [
-
-    address.street,
-    address.district,
-    address.city,
-    address.province
-
-  ]
-    .filter(Boolean)
-    .join(" ");
-
+  return `
+    ${address.street || ""}
+    ${address.district || ""}
+    ${address.city || ""}
+    ${address.province || ""}
+  `
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /*
@@ -143,20 +170,33 @@ async function getAddressDetail(
     const address =
       result.data;
 
+    /*
+    |--------------------------------------------------------------------------
+    | ADDRESS ID FIX
+    |--------------------------------------------------------------------------
+    */
+
+    const addressId =
+      Number(
+        address.addressId ||
+        address.id ||
+        address.addrId ||
+        address.address_id ||
+        0
+      );
+
+    console.log(
+      "ADDRESS ID:",
+      addressId
+    );
+
     return {
 
       success: true,
 
       data: {
 
-        /*
-        |--------------------------------------------------------------------------
-        | PENTING
-        |--------------------------------------------------------------------------
-        */
-
-        addressId:
-          address.addressId,
+        addressId,
 
         uid:
           address.uid,
@@ -177,10 +217,19 @@ async function getAddressDetail(
           address.roomNumber,
 
         latitude:
-          address.latitude,
+          Number(
+            address.latitude ||
+            address.lat ||
+            0
+          ),
 
         longitude:
-          address.longitude,
+          Number(
+            address.longitude ||
+            address.lng ||
+            address.lon ||
+            0
+          ),
 
         fullAddress:
           buildAddressString(
@@ -203,7 +252,6 @@ async function getAddressDetail(
     };
 
   }
-
 }
 
 module.exports = {
