@@ -12,7 +12,7 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Auto Feedback</title>
+  <title>Auto Feedback JARVIS</title>
 
   <link
     rel="stylesheet"
@@ -22,6 +22,18 @@
 </head>
 
 <body>
+
+  <!-- LOADER -->
+
+  <div id="globalLoader">
+
+    <div class="jarvis-ring"></div>
+
+    <div class="loader-text">
+      JARVIS LOADING...
+    </div>
+
+  </div>
 
   <div class="container">
 
@@ -33,13 +45,13 @@
     >
 
       <div class="title">
-        Auto Feedback
+        AUTO FEEDBACK
       </div>
 
       <div class="input-group">
 
         <label>
-          Account
+          ACCOUNT
         </label>
 
         <input
@@ -53,7 +65,7 @@
       <div class="input-group">
 
         <label>
-          Password
+          PASSWORD
         </label>
 
         <input
@@ -67,7 +79,7 @@
       <div class="input-group">
 
         <label>
-          Login Type
+          LOGIN TYPE
         </label>
 
         <select id="zizhangyi">
@@ -88,7 +100,7 @@
         class="btn-primary"
         onclick="login()"
       >
-        Login
+        LOGIN
       </button>
 
       <div id="loginResult"></div>
@@ -104,30 +116,18 @@
 
       <!-- NAVBAR -->
 
-      <div class="card">
+      <div class="navbar">
 
-        <div
-          style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:10px;
-            flex-wrap:wrap;
-          "
-        >
-
-          <div class="title">
-            Auto Feedback Dashboard
-          </div>
-
-          <button
-            class="logout-btn"
-            onclick="logout()"
-          >
-            Logout
-          </button>
-
+        <div class="logo">
+          JARVIS AUTO FEEDBACK
         </div>
+
+        <button
+          class="logout-btn"
+          onclick="logout()"
+        >
+          Logout
+        </button>
 
       </div>
 
@@ -135,76 +135,36 @@
 
       <div class="card">
 
-        <div
-          style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:20px;
-            flex-wrap:wrap;
-            gap:10px;
-          "
-        >
-
-          <div class="title">
-            Task List
-          </div>
-
-          <button
-            class="btn-primary"
-            onclick="loadTasks()"
-            style="
-              width:auto;
-              padding:12px 20px;
-            "
-          >
-            Refresh Tasks
-          </button>
-
+        <div class="section-title">
+          TASK LIST
         </div>
 
         <!-- SEARCH -->
 
-        <div
-          style="
-            margin-bottom:20px;
-          "
-        >
+        <div class="search-box">
 
           <input
             type="text"
-            id="searchTask"
-            placeholder="Cari nama / task id / phone / kota..."
-            onkeyup="searchTasks()"
-            style="
-              width:100%;
-              padding:14px;
-              border-radius:12px;
-              border:none;
-              outline:none;
-              background:#1e293b;
-              color:white;
-              font-size:15px;
-            "
+            id="searchInput"
+            class="search-input"
+            placeholder="Cari nama / task id / address id..."
+            onkeyup="filterTasks()"
           >
 
         </div>
 
-        <!-- TOTAL -->
+        <button
+          class="btn-primary"
+          onclick="loadTasks()"
+        >
+          REFRESH TASKS
+        </button>
 
-        <div
-          id="taskCount"
-          style="
-            margin-bottom:15px;
-            color:#94a3b8;
-            font-size:14px;
-          "
-        ></div>
-
-        <!-- TASKS -->
+        <!-- TASK GRID -->
 
         <div
           id="tasks"
+          class="task-grid"
         ></div>
 
       </div>
@@ -216,5 +176,4 @@
   <script src="/app.js"></script>
 
 </body>
-
 </html>
