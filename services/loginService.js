@@ -2,6 +2,12 @@
 
 const axios = require("axios");
 
+/*
+|--------------------------------------------------------------------------
+| BUILD HEADERS
+|--------------------------------------------------------------------------
+*/
+
 function buildHeaders(cookie = "") {
 
   return {
@@ -27,7 +33,7 @@ function buildHeaders(cookie = "") {
 
     osVersion: "10",
 
-    versionCode: "122",
+    versionCode: "300",
 
     versionName: "2.9.2-release",
 
@@ -40,13 +46,19 @@ function buildHeaders(cookie = "") {
 
 }
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
+
 async function login({
 
   account,
 
   password,
 
-  appVersion = "0"
+  appVersion = "1"
 
 }) {
 
@@ -56,14 +68,27 @@ async function login({
     |--------------------------------------------------------------------------
     | PASSWORD
     |--------------------------------------------------------------------------
-    |
-    | JANGAN md5 lagi
-    | karena frontend/app asli
-    | kemungkinan sudah md5
-    |
     */
 
     const pwd = password;
+
+    /*
+    |--------------------------------------------------------------------------
+    | REQUEST BODY
+    |--------------------------------------------------------------------------
+    */
+
+    const body = {
+
+      account,
+
+      pwd,
+
+      appVersion
+
+    };
+
+    console.log("LOGIN BODY:", body);
 
     /*
     |--------------------------------------------------------------------------
@@ -76,15 +101,7 @@ async function login({
 
         "https://ez-co-app.tin.group/app/offline/user/login",
 
-        {
-
-          account,
-
-          pwd,
-
-          appVersion
-
-        },
+        body,
 
         {
 
@@ -97,7 +114,7 @@ async function login({
 
     /*
     |--------------------------------------------------------------------------
-    | GET COOKIE
+    | COOKIES
     |--------------------------------------------------------------------------
     */
 
@@ -144,11 +161,11 @@ async function login({
 
       success: true,
 
-      message:
-        "Login berhasil",
-
       data:
         response.data.data,
+
+      raw:
+        response.data,
 
       cookies: {
 
