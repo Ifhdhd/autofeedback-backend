@@ -16,9 +16,6 @@ const feedbackRoutes =
 const scheduleRoutes =
   require("./routes/schedules");
 
-const schedulerService =
-  require("./services/schedulerService");
-
 const app = express();
 
 const PORT =
@@ -195,57 +192,6 @@ app.get(
 
   }
 );
-
-/*
-|--------------------------------------------------------------------------
-| AUTO RUN SCHEDULER
-|--------------------------------------------------------------------------
-*/
-
-(async () => {
-
-  try {
-
-    /*
-    |--------------------------------------------------------------------------
-    | REAL COOKIE
-    |--------------------------------------------------------------------------
-    */
-
-    const cookie =
-
-      "SESSION=N2JiNGRjNzUtNmIzOS00NTkwLTkwZTctYzE1ZjNhMGRlYjY5; acw_tc=9581d31f17779602972407866ebde2e08798567324595c6cece432f0ace79c";
-
-    /*
-    |--------------------------------------------------------------------------
-    | RUN
-    |--------------------------------------------------------------------------
-    */
-
-    await schedulerService.runScheduler({
-
-      cookie,
-
-      imageUrl:
-        "https://dummyimage.com/600x400/000/fff.jpg",
-
-      type: 0
-
-    });
-
-  } catch (err) {
-
-    console.log(
-      "RUN SCHEDULER ERROR:"
-    );
-
-    console.log(
-      err.message
-    );
-
-  }
-
-})();
 
 /*
 |--------------------------------------------------------------------------
