@@ -1,56 +1,100 @@
 // routes/auth.js
 
 const express = require("express");
-
 const router = express.Router();
 
 const {
   login
 } = require("../services/loginService");
 
-router.post(
-  "/login",
-  async (req, res) => {
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
 
-    try {
+router.post("/login", async (req, res) => {
 
-      const {
+  try {
 
-        account,
+    /*
+    |--------------------------------------------------------------------------
+    | BODY
+    |--------------------------------------------------------------------------
+    */
 
-        password,
+    const {
 
-        appVersion = "0"
+      account,
 
-      } = req.body;
+      password,
 
-      const result =
-        await login({
+      appVersion = "0"
 
-          account,
+    } = req.body;
 
-          password,
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDATION
+    |--------------------------------------------------------------------------
+    */
 
-          appVersion
+    if (!account || !password) {
 
-        });
-
-      return res.json(result);
-
-    } catch (err) {
-
-      return res.status(500).json({
+      return res.status(400).json({
 
         success: false,
 
         message:
-          err.message
+          "account/password kosong"
 
       });
 
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN SERVICE
+    |--------------------------------------------------------------------------
+    */
+
+    const result =
+      await login({
+
+        account,
+
+        password,
+
+        appVersion
+
+      });
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    return res.json(result);
+
+  } catch (err) {
+
+    console.log(
+      "AUTH ROUTE ERROR:",
+      err.message
+    );
+
+    return res.status(500).json({
+
+      success: false,
+
+      message:
+        err.message
+
+    });
+
   }
-);
+
+});
 
 module.exports = router;
