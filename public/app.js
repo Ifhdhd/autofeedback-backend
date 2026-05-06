@@ -385,8 +385,8 @@ async function loadTasks(){
           <button
             class="btn-success"
             onclick="openSchedule(
-              '${task.id}',
-              '${task.addressBo?.id || ""}',
+  '${task.id}',
+  '${task.addressId || task.addressBo?.addressId || task.addressBo?.id || ""}',
               '${lat}',
               '${lng}'
             )"
