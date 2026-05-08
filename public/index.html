@@ -37,51 +37,29 @@
       </div>
 
       <div class="input-group">
-
-        <label>
-          Account
-        </label>
-
+        <label>Account</label>
         <input
           type="text"
           id="account"
           placeholder="Masukkan account"
         >
-
       </div>
 
       <div class="input-group">
-
-        <label>
-          Password
-        </label>
-
+        <label>Password</label>
         <input
           type="password"
           id="password"
           placeholder="Masukkan password"
         >
-
       </div>
 
       <div class="input-group">
-
-        <label>
-          Login Type
-        </label>
-
+        <label>Login Type</label>
         <select id="zizhangyi">
-
-          <option value="1">
-            Zizhangyi
-          </option>
-
-          <option value="0">
-            Non Zizhangyi
-          </option>
-
+          <option value="1">Zizhangyi</option>
+          <option value="0">Non Zizhangyi</option>
         </select>
-
       </div>
 
       <button
@@ -116,10 +94,25 @@
           "
         >
 
-          <div class="title">
-            Dashboard
+          <!-- LEFT -->
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+
+            <div class="title">
+              Dashboard
+            </div>
+
+            <!-- 🔥 TOMBOL BALIK KE LANDING -->
+            <button
+              class="btn-primary"
+              onclick="goLanding()"
+              style="width:auto; padding:10px 16px;"
+            >
+              🚀 Main
+            </button>
+
           </div>
 
+          <!-- RIGHT -->
           <button
             class="logout-btn"
             onclick="logout()"
@@ -165,11 +158,7 @@
 
         <!-- SEARCH -->
 
-        <div
-          style="
-            margin-bottom:20px;
-          "
-        >
+        <div style="margin-bottom:20px;">
 
           <input
             type="text"
@@ -191,7 +180,6 @@
         </div>
 
         <!-- TOTAL -->
-
         <div
           id="taskCount"
           style="
@@ -202,10 +190,7 @@
         ></div>
 
         <!-- TASKS -->
-
-        <div
-          id="tasks"
-        ></div>
+        <div id="tasks"></div>
 
       </div>
 
