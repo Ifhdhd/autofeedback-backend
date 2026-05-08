@@ -16,7 +16,7 @@ function goLanding(){
   document.body.style.opacity = "0.5";
 
   setTimeout(()=>{
-    window.location.href = "https://zokmotor-landing.onrender.com"; // GANTI LINK LU
+    window.location.href = "https://afb-backend-wyjf.onrender.com"; // GANTI LINK LU
   },500);
 
 }
